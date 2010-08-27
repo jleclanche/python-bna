@@ -78,7 +78,9 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 
 def getToken(secret, digits=8):
 	"""
-	Gets the current token for a given secret
+	Computes the token for a given secret
+	Returns the token, and the time remaining
+	for that token
 	"""
 	import hmac
 	from struct import pack, unpack
@@ -87,4 +89,4 @@ def getToken(secret, digits=8):
 	r = hmac.new(secret, msg, sha1).digest()
 	idx = ord(r[19]) & 0x0f
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
-	return h % (10 ** digits)
+	return h % (10 ** digits), t % 30
