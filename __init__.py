@@ -14,8 +14,11 @@ RSA_KEY = 1048900188079865568740077109142054431570301596680341971861256789602874
 RSA_MOD = 257
 
 ENROLL_HOSTS = {
-	"EU": "m.eu.mobileservice.blizzard.com",
-	"US": "m.us.mobileservice.blizzard.com",
+	#"EU": "m.eu.mobileservice.blizzard.com",
+	#"US": "m.us.mobileservice.blizzard.com",
+	"EU": "eu.mobile-service.blizzard.com",
+	"US": "us.mobile-service.blizzard.com",
+	"default": "mobile-service.blizzard.com",
 }
 
 def getEmptyEncryptMsg(otp, region, model):
@@ -24,7 +27,7 @@ def getEmptyEncryptMsg(otp, region, model):
 	ret += (model + "\0" * 16)[:16]
 	return chr(1) + ret
 
-def doEnroll(data, enroll_host="mobile-service.blizzard.com", enroll_uri="/enrollment/enroll.htm"):
+def doEnroll(data, enroll_host=ENROLL_HOSTS["default"], enroll_uri="/enrollment/enroll.htm"):
 	"""
 	Send computed data to Blizzard servers
 	Return the answer from the server
@@ -64,8 +67,9 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	otp = (timedigest() + timedigest())[:37]
 	data = getEmptyEncryptMsg(otp, region, model)
 	
+	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
 	e = encrypt(data)
-	response = decrypt(doEnroll(e)[8:], otp)
+	response = decrypt(doEnroll(e, host)[8:], otp)
 	
 	secret = response[:20]
 	serial = response[20:]
