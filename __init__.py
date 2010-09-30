@@ -21,6 +21,9 @@ ENROLL_HOSTS = {
 	"default": "mobile-service.blizzard.com",
 }
 
+class HTTPError(Exception):
+	pass
+
 def getEmptyEncryptMsg(otp, region, model):
 	ret = (otp + "\0" * 37)[:37]
 	ret += region or "\0\0"
@@ -39,7 +42,7 @@ def doEnroll(data, enroll_host=ENROLL_HOSTS["default"], enroll_uri="/enrollment/
 	response = conn.getresponse()
 	
 	if response.status != 200:
-		raise IOError("%s returned status %i" % (enroll_host, response.status))
+		raise HTTPError("%s returned status %i" % (enroll_host, response.status))
 	
 	ret = response.read()
 	conn.close()
