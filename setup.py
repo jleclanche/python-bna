@@ -17,7 +17,7 @@ CLASSIFIERS = [
 
 setup(
 	name = "python-bna",
-	py_packages = ["bna"],
+	py_modules = ["bna"],
 	author = "Jerome Leclanche",
 	author_email = "adys.wh@gmail.com",
 	classifiers = CLASSIFIERS,
@@ -25,5 +25,5 @@ setup(
 	download_url = "http://github.com/Adys/python-bna/tarball/master",
 	long_description = README,
 	url = "http://github.com/Adys/python-bna",
-	version = "1.2",
+	version = "1.2.1",
 )
