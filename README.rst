@@ -1,6 +1,7 @@
 Requesting a new authenticator
 ------------------------------
 ::
+
 	import bna
 	try:
 		# region is EU or US
@@ -14,6 +15,7 @@ Requesting a new authenticator
 Getting a token
 ---------------
 ::
+
 	# Get and print a token
 	token, timeRemaining = bna.getToken(secret=secret)
 	print token
