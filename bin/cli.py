@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import bna
 import keyring
+import os
 import sys
 from binascii import hexlify, unhexlify
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.pardir))
+import bna
 
 SERVICE = "trogdor"
 
