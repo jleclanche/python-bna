@@ -5,7 +5,7 @@ Battle.net Authenticator routines in Python.
 
 Specification can be found here:
   <http://bnetauth.freeportal.us/specification.html>
-Python implementation by Jerome Leclanche <j.leclanche@gmail.com>
+Python implementation by Jerome Leclanche <jerome.leclanche@gmail.com>
 """
 from time import time
 from hashlib import sha1
