@@ -19,7 +19,7 @@ setup(
 	name = "python-bna",
 	py_modules = ["bna"],
 	author = "Jerome Leclanche",
-	author_email = "adys.wh@gmail.com",
+	author_email = "jerome.leclanche@gmail.com",
 	classifiers = CLASSIFIERS,
 	description = "Battle.net Authenticator routines in Python.",
 	download_url = "http://github.com/Adys/python-bna/tarball/master",
