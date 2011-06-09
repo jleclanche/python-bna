@@ -58,21 +58,22 @@ class Authenticator(object):
 	
 	def queryNewAuthenticator(self, args):
 		try:
-			authenticator = bna.requestNewSerial(args.region)
+			reply = bna.requestNewSerial(args.region)
 		except bna.HTTPError as e:
 			self.error("Could not connect: %s" % (e))
 		
-		serial = bna.normalizeSerial(authenticator["serial"])
-		secret = hexlify(authenticator["secret"])
+		serial = bna.normalizeSerial(reply["serial"])
+		secret = hexlify(reply["secret"])
 		
 		self.setSecret(serial, secret)
 		
-		# We set the authenticator as default if we don't have one set already
+		# We set the serial as default if we don't have one set already
 		# Otherwise, we check for --set-default
 		if args.setdefault or not self.getDefaultSerial():
 			self.setDefaultSerial(serial)
 		
-		print(authenticator["serial"])
+		msg = "Success. Your new serial is: %s" % (reply["serial"])
+		print(msg)
 	
 	def runLive(self, secret):
 		from time import sleep
