@@ -1,19 +1,53 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import keyring
 import os
 import sys
 from binascii import hexlify, unhexlify
+from ConfigParser import ConfigParser
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.pardir))
 import bna
-
-SERVICE = "trogdor"
 
 def ERROR(txt):
 	sys.stderr.write("Error: %s\n" % (txt))
 	exit(1)
 
+def getConfigDir():
+	"""
+	Gets the path to the config directory
+	"""
+	configdir = "bna"
+	if os.name == "posix":
+		home = os.environ.get("HOME")
+		base = os.environ.get("XDG_CONFIG_HOME", os.path.join(home, ".config"))
+		path = os.path.join(base, configdir)
+	elif os.name == "nt":
+		base = os.environ["APPDATA"]
+		path = os.path.join(base, configdir)
+	else:
+		raise NotImplementedError("Config dir support not implemented for %s platform" % (os.name))
+	
+	if not os.path.exists(path):
+		os.makedirs(path)
+	return path
+
+def getSecret(serial):
+	serials = ConfigParser()
+	serials.read([os.path.join(getConfigDir(), "serials.cfg")])
+	if not serials.has_section(serial):
+		return None
+	
+	return serials.get(serial, "secret")
+
+def setSecret(serial, secret):
+	serials = ConfigParser()
+	if not serials.has_section(serial):
+		serials.add_section(serial)
+	serials.set(serial, "secret", secret)
+	
+	f = open(os.path.join(getConfigDir(), "serials.cfg"))
+	serials.write(f)
+	f.close()
 
 def normalizeSerial(serial):
 	return serial.lower().replace("-", "").strip()
@@ -47,7 +81,7 @@ def runAuthenticatorQuery(args):
 	serial = normalizeSerial(authenticator["serial"])
 	secret = hexlify(authenticator["secret"])
 	
-	keyring.set_password(SERVICE, serial, secret)
+	setSecret(serial, secret)
 	
 	# We set the authenticator as default if we don't have one set already
 	# Otherwise, we check for --set-default
@@ -98,7 +132,7 @@ def main():
 		setDefaultSerial(serial)
 	
 	# Get the secret from the keyring
-	secret = keyring.get_password(SERVICE, serial)
+	secret = getSecret(serial)
 	if secret is None: # No such serial
 		ERROR("%r: No such serial" % (serial))
 	
