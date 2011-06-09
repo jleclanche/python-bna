@@ -45,16 +45,26 @@ def setSecret(serial, secret):
 		serials.add_section(serial)
 	serials.set(serial, "secret", secret)
 	
-	f = open(os.path.join(getConfigDir(), "serials.cfg"))
-	serials.write(f)
-	f.close()
+	with open(os.path.join(getConfigDir(), "serials.cfg"), "w") as f:
+		serials.write(f)
 
 
 def getDefaultSerial():
+	serials = ConfigParser()
+	serials.read([os.path.join(getConfigDir(), "serials.cfg")])
+	if not serials.has_section("bna"):
+		return None
+	return serials.get("bna", "default_serial")
 	return "us100604693849" # XXX
 
 def setDefaultSerial(serial):
-	pass # TODO
+	serials = ConfigParser()
+	if not serials.has_section("bna"):
+		serials.add_section("bna")
+	serials.set("bna", "default_serial", serial)
+	
+	with open(os.path.join(getConfigDir(), "serials.cfg"), "w") as f:
+		serials.write(f)
 
 
 def runAuthenticatorQuery(args):
