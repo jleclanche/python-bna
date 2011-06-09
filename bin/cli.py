@@ -3,20 +3,21 @@
 
 import os
 import sys
+from argparse import ArgumentParser
 from binascii import hexlify, unhexlify
 from ConfigParser import ConfigParser
-from optparse import OptionParser
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.pardir))
 import bna
 
 class Authenticator(object):
 	def __init__(self, args):
-		options = OptionParser()
-		options.add_option("-u", "--update", action="store_true", dest="update", help="update token every time")
-		options.add_option("-n", "--new", action="store_true", dest="new", help="request a new authenticator")
-		options.add_option("-r", "--region", type="string", dest="region", default="US", help="desired region for new authenticators")
-		options.add_option("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
-		args, serial = options.parse_args(args)
+		arguments = ArgumentParser(prog="bna")
+		arguments.add_argument("-u", "--update", action="store_true", dest="update", help="update token every time")
+		arguments.add_argument("-n", "--new", action="store_true", dest="new", help="request a new authenticator")
+		arguments.add_argument("-r", "--region", type=str, dest="region", default="US", help="desired region for new authenticators")
+		arguments.add_argument("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
+		arguments.add_argument("serial", nargs="?")
+		args = arguments.parse_args(args)
 		
 		self.config = ConfigParser()
 		self.config.read([os.path.join(self.getConfigDir(), "bna.conf")])
@@ -26,12 +27,12 @@ class Authenticator(object):
 			self.queryNewAuthenticator(args)
 			exit()
 		
-		if not serial:
+		if not args.serial:
 			serial = self.getDefaultSerial()
 			if serial is None:
 				self.error("You must provide an authenticator serial")
 		else:
-			serial = serial[0]
+			serial = args.serial
 		serial = bna.normalizeSerial(serial)
 		
 		# Are we setting a serial as default?
