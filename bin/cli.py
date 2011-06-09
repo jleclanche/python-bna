@@ -41,7 +41,7 @@ def setDefaultSerial(serial):
 def runAuthenticatorQuery(args):
 	try:
 		authenticator = bna.requestNewSerial(args.region)
-	except bna.HTTPError, e:
+	except bna.HTTPError as e:
 		ERROR("Could not connect: %s" % (e))
 	
 	serial = normalizeSerial(authenticator["serial"])
@@ -54,16 +54,16 @@ def runAuthenticatorQuery(args):
 	if args.setdefault or not getDefaultSerial():
 		setDefaultSerial(serial)
 	
-	print authenticator["serial"]
+	print(authenticator["serial"])
 
 def runLive(secret):
 	from time import sleep
-	print "Ctrl-C to exit"
+	print("Ctrl-C to exit")
 	while 1:
 		token, timeRemaining = bna.getToken(secret=unhexlify(secret))
-		print "\r%08i" % (token),
+		sys.stdout.write("\r%08i" % (token))
 		sys.stdout.flush()
-		sleep(timeRemaining)
+		sleep(1)
 
 
 def main():
@@ -108,7 +108,7 @@ def main():
 	
 	else:
 		token, timeRemaining = bna.getToken(secret=unhexlify(secret))
-		print token
+		print(token)
 
 if __name__ == "__main__":
 	main()
