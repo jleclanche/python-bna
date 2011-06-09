@@ -49,21 +49,6 @@ def setSecret(serial, secret):
 	serials.write(f)
 	f.close()
 
-def normalizeSerial(serial):
-	return serial.lower().replace("-", "").strip()
-
-def prettifySerial(serial):
-	serial = normalizeSerial(serial)
-	if len(serial) != 14:
-		raise ValueError("serial %r should be 14 characters long" % (serial))
-	
-	def digits(chars):
-		if not chars.isdigit():
-			raise ValueError("bad serial %r" % (serial))
-		return "%04i" % int((chars))
-	
-	return "%s-%s-%s-%s" % (serial[0:2].upper(), digits(serial[2:6]), digits(serial[6:10]), digits(serial[10:14]))
-
 
 def getDefaultSerial():
 	return "us100604693849" # XXX
@@ -78,7 +63,7 @@ def runAuthenticatorQuery(args):
 	except bna.HTTPError as e:
 		ERROR("Could not connect: %s" % (e))
 	
-	serial = normalizeSerial(authenticator["serial"])
+	serial = bna.normalizeSerial(authenticator["serial"])
 	secret = hexlify(authenticator["secret"])
 	
 	setSecret(serial, secret)
@@ -125,7 +110,7 @@ def main():
 			ERROR("You must provide an authenticator serial")
 	else:
 		serial = serial[0]
-	serial = normalizeSerial(serial)
+	serial = bna.normalizeSerial(serial)
 	
 	# Are we setting a serial as default?
 	if args.setdefault:

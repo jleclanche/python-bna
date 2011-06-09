@@ -97,3 +97,28 @@ def getToken(secret, digits=8, seconds=30):
 	idx = ord(r[19]) & 0x0f
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
+
+
+def normalizeSerial(serial):
+	"""
+	Normalizes a serial
+	Will lowercase it, remove its dashes and strip
+	any whitespace
+	"""
+	return serial.lower().replace("-", "").strip()
+
+def prettifySerial(serial):
+	"""
+	Returns the prettified version of a serial
+	It should look like XX-AAAA-BBBB-CCCC-DDDD
+	"""
+	serial = normalizeSerial(serial)
+	if len(serial) != 14:
+		raise ValueError("serial %r should be 14 characters long" % (serial))
+	
+	def digits(chars):
+		if not chars.isdigit():
+			raise ValueError("bad serial %r" % (serial))
+		return "%04i" % int((chars))
+	
+	return "%s-%s-%s-%s" % (serial[0:2].upper(), digits(serial[2:6]), digits(serial[6:10]), digits(serial[10:14]))
