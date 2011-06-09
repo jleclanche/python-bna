@@ -35,7 +35,7 @@ def doEnroll(data, enroll_host=ENROLL_HOSTS["default"], enroll_uri="/enrollment/
 	Send computed data to Blizzard servers
 	Return the answer from the server
 	"""
-	from httplib import HTTPConnection
+	from http.client import HTTPConnection
 	
 	conn = HTTPConnection(enroll_host)
 	conn.request("POST", enroll_uri, data)
