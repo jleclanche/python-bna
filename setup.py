@@ -25,5 +25,5 @@ setup(
 	download_url = "http://github.com/Adys/python-bna/tarball/master",
 	long_description = README,
 	url = "http://github.com/Adys/python-bna",
-	version = "1.2.1",
+	version = "2.0",
 )
