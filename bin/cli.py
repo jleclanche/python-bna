@@ -120,7 +120,8 @@ class Authenticator(object):
 		if not self.config.has_section(serial):
 			return None
 		
-		return self.config.get(serial, "secret")
+		secret = self.config.get(serial, "secret")
+		return bytearray(secret, "ascii")
 
 	def setSecret(self, serial, secret):
 		if not self.config.has_section(serial):

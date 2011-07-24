@@ -92,9 +92,9 @@ def getToken(secret, digits=8, seconds=30):
 	import hmac
 	from struct import pack, unpack
 	t = int(time())
-	msg = pack(">Q", t / seconds)
+	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
-	idx = ord(r[19]) & 0x0f
+	idx = r[19] & 0x0f
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
 
