@@ -1,11 +1,14 @@
-#!/usr/bin/env python3.2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import os
 import sys
 from argparse import ArgumentParser
 from binascii import hexlify, unhexlify
-from configparser import ConfigParser
+try:
+	from configparser import ConfigParser
+except ImportError:
+	from ConfigParser import ConfigParser
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.path.pardir))
 import bna
 
@@ -98,11 +101,11 @@ class Authenticator(object):
 			path = os.path.join(base, configdir)
 		else:
 			raise NotImplementedError("Config dir support not implemented for %s platform" % (os.name))
-		
+
 		if not os.path.exists(path):
 			os.makedirs(path)
 		return path
-	
+
 	def getDefaultSerial(self):
 		if not self.config.has_section("bna"):
 			return None
@@ -112,14 +115,14 @@ class Authenticator(object):
 		if not self.config.has_section("bna"):
 			self.config.add_section("bna")
 		self.config.set("bna", "default_serial", serial)
-		
+
 		with open(os.path.join(self.getConfigDir(), "bna.conf"), "w") as f:
 			self.config.write(f)
-	
+
 	def getSecret(self, serial):
 		if not self.config.has_section(serial):
 			return None
-		
+
 		secret = self.config.get(serial, "secret")
 		return bytearray(secret, "ascii")
 
@@ -127,7 +130,7 @@ class Authenticator(object):
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
-		
+
 		with open(os.path.join(self.getConfigDir(), "bna.conf"), "w") as f:
 			self.config.write(f)
 
