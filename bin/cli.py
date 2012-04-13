@@ -16,6 +16,7 @@ class Authenticator(object):
 		arguments = ArgumentParser(prog="bna")
 		arguments.add_argument("-u", "--update", action="store_true", dest="update", help="update token every time")
 		arguments.add_argument("-n", "--new", action="store_true", dest="new", help="request a new authenticator")
+		arguments.add_argument("-d", "--delete", action="store_true", dest="delete", help="delete a stored serial and its matching secret")
 		arguments.add_argument("-r", "--region", type=str, dest="region", default="US", help="desired region for new authenticators")
 		arguments.add_argument("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
 		arguments.add_argument("serial", nargs="?")
@@ -37,6 +38,10 @@ class Authenticator(object):
 			serial = args.serial
 		serial = bna.normalizeSerial(serial)
 
+		if args.delete:
+			self.deleteSerial(serial)
+			exit()
+
 		# Are we setting a serial as default?
 		if args.setdefault:
 			self.setDefaultSerial(serial)
@@ -57,6 +62,14 @@ class Authenticator(object):
 	def error(self, txt):
 		sys.stderr.write("Error: %s\n" % (txt))
 		exit(1)
+
+	def deleteSerial(self, serial):
+		serial = bna.normalizeSerial(serial)
+		if not self.config.has_section(serial):
+			self.error("No such serial: %r" % (serial))
+		self.config.remove_section(serial)
+		self.writeConfig()
+		print("Successfully deleted %r" % (serial))
 
 	def queryNewAuthenticator(self, args):
 		try:
@@ -114,7 +127,9 @@ class Authenticator(object):
 		if not self.config.has_section("bna"):
 			self.config.add_section("bna")
 		self.config.set("bna", "default_serial", serial)
+		self.writeConfig()
 
+	def writeConfig(self):
 		with open(os.path.join(self.getConfigDir(), "bna.conf"), "w") as f:
 			self.config.write(f)
 
@@ -130,8 +145,7 @@ class Authenticator(object):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
 
-		with open(os.path.join(self.getConfigDir(), "bna.conf"), "w") as f:
-			self.config.write(f)
+		self.writeConfig()
 
 def main():
 	import signal
