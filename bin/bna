@@ -128,7 +128,7 @@ class Authenticator(object):
 		Gets the path to the config file
 		"""
 		if self.args.config:
-			return self.args.config
+			return os.path.expanduser(self.args.config)
 
 		def configDir():
 			configdir = "bna"
