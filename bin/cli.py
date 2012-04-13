@@ -14,9 +14,9 @@ import bna
 class Authenticator(object):
 	def __init__(self, args):
 		arguments = ArgumentParser(prog="bna")
-		arguments.add_argument("-u", "--update", action="store_true", dest="update", help="update token every time")
 		arguments.add_argument("-n", "--new", action="store_true", dest="new", help="request a new authenticator")
 		arguments.add_argument("-d", "--delete", action="store_true", dest="delete", help="delete a stored serial and its matching secret")
+		arguments.add_argument("-i", "--interactive", action="store_true", dest="update", help="interactive mode: updates the token as soon as it expires")
 		arguments.add_argument("-r", "--region", type=str, dest="region", default="US", help="desired region for new authenticators")
 		arguments.add_argument("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
 		arguments.add_argument("serial", nargs="?")
