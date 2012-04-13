@@ -36,14 +36,14 @@ def doEnroll(data, enroll_host=ENROLL_HOSTS["default"], enroll_uri="/enrollment/
 	Return the answer from the server
 	"""
 	from http.client import HTTPConnection
-	
+
 	conn = HTTPConnection(enroll_host)
 	conn.request("POST", enroll_uri, data)
 	response = conn.getresponse()
-	
+
 	if response.status != 200:
 		raise HTTPError("%s returned status %i" % (enroll_host, response.status))
-	
+
 	ret = response.read()
 	conn.close()
 	return ret
@@ -66,21 +66,21 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	This will connect to the Blizzard servers
 	"""
 	def timedigest(): return sha1(str(time())).digest()
-	
+
 	otp = (timedigest() + timedigest())[:37]
 	data = getEmptyEncryptMsg(otp, region, model)
-	
+
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
 	e = encrypt(data)
 	response = decrypt(doEnroll(e, host)[8:], otp)
-	
+
 	secret = response[:20]
 	serial = response[20:]
-	
+
 	region = serial[:2]
 	if region not in ("EU", "US"):
 		raise ValueError("Unexpected region: %r" % (region))
-	
+
 	return {"serial": serial, "secret": secret}
 
 def getToken(secret, digits=8, seconds=30):
@@ -94,7 +94,13 @@ def getToken(secret, digits=8, seconds=30):
 	t = int(time())
 	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
-	idx = r[19] & 0x0f
+	k = r[19]
+
+	# Python2 compat
+	if isinstance(k, str):
+		k = ord(k)
+
+	idx = k & 0x0f
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
 
@@ -115,10 +121,10 @@ def prettifySerial(serial):
 	serial = normalizeSerial(serial)
 	if len(serial) != 14:
 		raise ValueError("serial %r should be 14 characters long" % (serial))
-	
+
 	def digits(chars):
 		if not chars.isdigit():
 			raise ValueError("bad serial %r" % (serial))
 		return "%04i" % int((chars))
-	
+
 	return "%s-%s-%s-%s" % (serial[0:2].upper(), digits(serial[2:6]), digits(serial[6:10]), digits(serial[10:14]))
