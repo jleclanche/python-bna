@@ -33,7 +33,7 @@ class Authenticator(object):
 		if not args.serial:
 			serial = self.getDefaultSerial()
 			if serial is None:
-				self.error("You must provide an authenticator serial")
+				self.error("You must provide an authenticator serial or set a default one with --set-default")
 		else:
 			serial = args.serial
 		serial = bna.normalizeSerial(serial)
@@ -119,7 +119,7 @@ class Authenticator(object):
 		return path
 
 	def getDefaultSerial(self):
-		if not self.config.has_section("bna"):
+		if not self.config.has_option("bna", "default_serial"):
 			return None
 		return self.config.get("bna", "default_serial")
 
