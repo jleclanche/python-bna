@@ -6,6 +6,9 @@ Specification can be found here:
   <http://bnetauth.freeportal.us/specification.html>
 Python implementation by Jerome Leclanche <jerome.leclanche@gmail.com>
 """
+
+__version__ = "3.0"
+
 from binascii import hexlify
 from hashlib import sha1
 from time import time
