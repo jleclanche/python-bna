@@ -78,6 +78,11 @@ class Authenticator(object):
 		if not self.config.has_section(serial):
 			self.error("No such serial: %r" % (serial))
 		self.config.remove_section(serial)
+
+		# If it's the default serial, remove that
+		if serial == self.getDefaultSerial():
+			self.config.remove_option("bna", "default_serial")
+
 		self.writeConfig()
 		print("Successfully deleted %r" % (serial))
 
