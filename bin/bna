@@ -56,9 +56,10 @@ class Authenticator(object):
 			self.setDefaultSerial(serial)
 
 		# Get the secret from the keyring
-		self._secret = unhexlify(self.getSecret(serial))
-		if self._secret is None: # No such serial
+		self._secret = self.getSecret(serial)
+		if not self._secret:
 			self.error("%r: No such serial" % (serial))
+		self._secret = unhexlify(self._secret)
 
 		# And print the token
 		if self.args.update:
