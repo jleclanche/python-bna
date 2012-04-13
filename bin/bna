@@ -31,6 +31,12 @@ class Authenticator(object):
 			self.queryNewAuthenticator(args)
 			exit()
 
+		if args.delete:
+			if not args.serial:
+				self.error("You must provide a serial with --delete")
+			self.deleteSerial(args.serial)
+			exit()
+
 		if not args.serial:
 			serial = self.getDefaultSerial()
 			if serial is None:
@@ -38,10 +44,6 @@ class Authenticator(object):
 		else:
 			serial = args.serial
 		serial = bna.normalizeSerial(serial)
-
-		if args.delete:
-			self.deleteSerial(serial)
-			exit()
 
 		# Are we setting a serial as default?
 		if args.setdefault:
