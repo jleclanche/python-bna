@@ -21,15 +21,15 @@ class Authenticator(object):
 		arguments.add_argument("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
 		arguments.add_argument("serial", nargs="?")
 		args = arguments.parse_args(args)
-		
+
 		self.config = ConfigParser()
 		self.config.read([os.path.join(self.getConfigDir(), "bna.conf")])
-		
+
 		# Are we requesting a new authenticator?
 		if args.new:
 			self.queryNewAuthenticator(args)
 			exit()
-		
+
 		if not args.serial:
 			serial = self.getDefaultSerial()
 			if serial is None:
@@ -37,56 +37,56 @@ class Authenticator(object):
 		else:
 			serial = args.serial
 		serial = bna.normalizeSerial(serial)
-		
+
 		# Are we setting a serial as default?
 		if args.setdefault:
 			self.setDefaultSerial(serial)
-		
+
 		# Get the secret from the keyring
-		secret = self.getSecret(serial)
-		if secret is None: # No such serial
+		self._secret = unhexlify(self.getSecret(serial))
+		if self._secret is None: # No such serial
 			self.error("%r: No such serial" % (serial))
-		
+
 		# And print the token
 		if args.update:
-			self.runLive(secret)
-		
+			self.runLive()
+
 		else:
-			token, timeRemaining = bna.getToken(secret=unhexlify(secret))
+			token, timeRemaining = bna.getToken(secret=self._secret)
 			print(token)
-	
+
 	def error(self, txt):
 		sys.stderr.write("Error: %s\n" % (txt))
 		exit(1)
-	
+
 	def queryNewAuthenticator(self, args):
 		try:
 			reply = bna.requestNewSerial(args.region)
 		except bna.HTTPError as e:
 			self.error("Could not connect: %s" % (e))
-		
+
 		serial = bna.normalizeSerial(reply["serial"])
 		secret = hexlify(reply["secret"])
-		
+
 		self.setSecret(serial, secret)
-		
+
 		# We set the serial as default if we don't have one set already
 		# Otherwise, we check for --set-default
 		if args.setdefault or not self.getDefaultSerial():
 			self.setDefaultSerial(serial)
-		
+
 		msg = "Success. Your new serial is: %s" % (reply["serial"])
 		print(msg)
-	
-	def runLive(self, secret):
+
+	def runLive(self):
 		from time import sleep
 		print("Ctrl-C to exit")
 		while 1:
-			token, timeRemaining = bna.getToken(secret=unhexlify(secret))
+			token, timeRemaining = bna.getToken(secret=self._secret)
 			sys.stdout.write("\r%08i" % (token))
 			sys.stdout.flush()
 			sleep(1)
-	
+
 	def getConfigDir(self):
 		"""
 		Gets the path to the config directory
