@@ -14,9 +14,13 @@ CLASSIFIERS = [
 	"Topic :: Security :: Cryptography",
 ]
 
+import bna
+VERSION = bna.__version__
+
 setup(
 	name = "python-bna",
 	py_modules = ["bna"],
+	scripts = ["bin/bna"],
 	author = "Jerome Leclanche",
 	author_email = "jerome.leclanche@gmail.com",
 	classifiers = CLASSIFIERS,
@@ -24,5 +28,5 @@ setup(
 	download_url = "http://github.com/Adys/python-bna/tarball/master",
 	long_description = README,
 	url = "http://github.com/Adys/python-bna",
-	version = "2.0",
+	version = VERSION,
 )
