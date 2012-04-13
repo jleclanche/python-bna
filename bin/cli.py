@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import os
 import sys
@@ -66,7 +65,7 @@ class Authenticator(object):
 			self.error("Could not connect: %s" % (e))
 
 		serial = bna.normalizeSerial(reply["serial"])
-		secret = hexlify(reply["secret"])
+		secret = hexlify(reply["secret"]).decode()
 
 		self.setSecret(serial, secret)
 
