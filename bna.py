@@ -175,3 +175,59 @@ def prettifySerial(serial):
 		return "%04i" % int((chars))
 
 	return "%s-%s-%s-%s" % (serial[0:2].upper(), digits(serial[2:6]), digits(serial[6:10]), digits(serial[10:14]))
+
+
+# restore functions, as reverse-engineered from the android implementation
+
+def restore(serial, code):
+	serial = normalizeSerial(serial)
+	if len(code) != 10:
+		raise ValueError("invalid restore code (should be 10 bytes): %r" % (code))
+
+	challenge = initiatePaperRestore(serial)
+	if len(challenge) != 32:
+		raise HTTPError("Invalid challenge length (expected 32, got %i)" % (len(challenge)))
+
+	code = restoreCodeToBytes(code)
+	hash = hmac.new(code, serial.encode() + challenge, digestmod=sha1).digest()
+
+	otp = getOneTimePad(20)
+	e = encrypt(hash + otp)
+	response = validatePaperRestore(serial + e)
+	secret = decrypt(response, otp)
+
+	return secret
+
+def restoreCodeToBytes(code):
+	ret = bytearray()
+	for c in code:
+		c = ord(c)
+		if 58 > c > 47:
+			c -= 48
+		else:
+			mod = c - 55
+			if c > 72:
+				mod -= 1
+			if c > 75:
+				mod -= 1
+			if c > 78:
+				mod -= 1
+			if c > 82:
+				mod -= 1
+			c = mod
+		ret.append(c)
+
+	return bytes(ret)
+
+def initiatePaperRestore(serial, host=ENROLL_HOSTS["default"], path="/enrollment/initiatePaperRestore.htm"):
+	return getServerResponse(serial, host, path)
+
+def validatePaperRestore(data, host=ENROLL_HOSTS["default"], path="/enrollment/validatePaperRestore.htm"):
+	try:
+		response = getServerResponse(data, host, path)
+	except HTTPError as e:
+		if e.response.status == 600:
+			raise HTTPError("Invalid serial or restore key", e.response)
+		else:
+			raise
+	return response
