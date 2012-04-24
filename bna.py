@@ -37,7 +37,7 @@ def getEmptyEncryptMsg(otp, region, model):
 	ret += (model.encode() + b"\0" * 16)[:16]
 	return b"\1" + ret
 
-def doEnroll(data, host=ENROLL_HOSTS["default"], path="/enrollment/enroll.htm"):
+def getServerResponse(data, host, path):
 	"""
 	Send computed data to Blizzard servers
 	Return the answer from the server
@@ -52,6 +52,9 @@ def doEnroll(data, host=ENROLL_HOSTS["default"], path="/enrollment/enroll.htm"):
 	ret = response.read()
 	conn.close()
 	return ret
+
+def enroll(data, host=ENROLL_HOSTS["default"], path="/enrollment/enroll.htm"):
+	return getServerResponse(data, host, path)
 
 def encrypt(data):
 	data = int(hexlify(data), 16)
@@ -86,7 +89,7 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 
 	e = encrypt(data)
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
-	response = decrypt(doEnroll(e, host)[8:], otp)
+	response = decrypt(enroll(e, host)[8:], otp)
 
 	secret = bytes(response[:20])
 	serial = response[20:].decode()
