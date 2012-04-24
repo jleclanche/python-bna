@@ -125,10 +125,10 @@ def getToken(secret, digits=8, seconds=30):
 def normalizeSerial(serial):
 	"""
 	Normalizes a serial
-	Will lowercase it, remove its dashes and strip
+	Will uppercase it, remove its dashes and strip
 	any whitespace
 	"""
-	return serial.lower().replace("-", "").strip()
+	return serial.upper().replace("-", "").strip()
 
 def prettifySerial(serial):
 	"""
