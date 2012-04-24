@@ -59,7 +59,7 @@ class Authenticator(object):
 		# Get the secret from the keyring
 		self._secret = self.getSecret(serial)
 		if not self._secret:
-			self.error("%r: No such serial" % (serial))
+			self.error("No such serial: %r" % (serial))
 		self._secret = unhexlify(self._secret)
 
 		# Print the restore code if the user asked for it
