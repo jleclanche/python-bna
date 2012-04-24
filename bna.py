@@ -40,6 +40,12 @@ def getEmptyEncryptMsg(otp, region, model):
 	ret += (model.encode() + b"\0" * 16)[:16]
 	return b"\1" + ret
 
+def getOneTimePad(length):
+	def timedigest():
+		return sha1(str(time()).encode()).digest()
+
+	return (timedigest() + timedigest())[:length]
+
 def getServerResponse(data, host, path):
 	"""
 	Send computed data to Blizzard servers
@@ -84,10 +90,8 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	Requests a new authenticator
 	This will connect to the Blizzard servers
 	"""
-	def timedigest():
-		return sha1(str(time()).encode()).digest()
 
-	otp = (timedigest() + timedigest())[:37]
+	otp = getOneTimePad(37)
 	data = getEmptyEncryptMsg(otp, region, model)
 
 	e = encrypt(data)
