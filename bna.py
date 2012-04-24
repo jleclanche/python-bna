@@ -37,17 +37,17 @@ def getEmptyEncryptMsg(otp, region, model):
 	ret += (model.encode() + b"\0" * 16)[:16]
 	return b"\1" + ret
 
-def doEnroll(data, enroll_host=ENROLL_HOSTS["default"], enroll_uri="/enrollment/enroll.htm"):
+def doEnroll(data, host=ENROLL_HOSTS["default"], path="/enrollment/enroll.htm"):
 	"""
 	Send computed data to Blizzard servers
 	Return the answer from the server
 	"""
-	conn = HTTPConnection(enroll_host)
-	conn.request("POST", enroll_uri, data)
+	conn = HTTPConnection(host)
+	conn.request("POST", path, data)
 	response = conn.getresponse()
 
 	if response.status != 200:
-		raise HTTPError("%s returned status %i" % (enroll_host, response.status))
+		raise HTTPError("%s returned status %i" % (host, response.status))
 
 	ret = response.read()
 	conn.close()
