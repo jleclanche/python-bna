@@ -102,6 +102,31 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 
 	return {"serial": serial, "secret": secret}
 
+def bytesToRestoreCode(digest):
+	ret = []
+	for i in digest:
+		c = i & 0x1f
+		if c < 10:
+			c += 48
+		else:
+			c += 55
+			if c > 72: # I
+				c += 1
+			if c > 75: # L
+				c += 1
+			if c > 78: # O
+				c += 1
+			if c > 82: # S
+				c += 1
+		ret.append(chr(c))
+
+	return "".join(ret)
+
+def getRestoreCode(serial, secret):
+	data = (serial.encode() + secret)
+	digest = sha1(data).digest()[-10:]
+	return bytesToRestoreCode(digest)
+
 def getToken(secret, digits=8, seconds=30):
 	"""
 	Computes the token for a given secret
