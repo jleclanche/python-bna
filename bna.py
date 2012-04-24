@@ -34,12 +34,6 @@ class HTTPError(Exception):
 		self.response = response
 		super(HTTPError, self).__init__(msg)
 
-def getEmptyEncryptMsg(otp, region, model):
-	ret = (otp + b"\0" * 37)[:37]
-	ret += region.encode() or b"\0\0"
-	ret += (model.encode() + b"\0" * 16)[:16]
-	return b"\1" + ret
-
 def getOneTimePad(length):
 	def timedigest():
 		return sha1(str(time()).encode()).digest()
@@ -90,9 +84,14 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	Requests a new authenticator
 	This will connect to the Blizzard servers
 	"""
+	def baseMsg(otp, region, model):
+		ret = (otp + b"\0" * 37)[:37]
+		ret += region.encode() or b"\0\0"
+		ret += (model.encode() + b"\0" * 16)[:16]
+		return b"\1" + ret
 
 	otp = getOneTimePad(37)
-	data = getEmptyEncryptMsg(otp, region, model)
+	data = baseMsg(otp, region, model)
 
 	e = encrypt(data)
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
