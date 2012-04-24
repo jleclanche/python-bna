@@ -29,7 +29,9 @@ ENROLL_HOSTS = {
 }
 
 class HTTPError(Exception):
-	pass
+	def __init__(self, msg, response):
+		self.response = response
+		super(HTTPError, self).__init__(msg)
 
 def getEmptyEncryptMsg(otp, region, model):
 	ret = (otp + b"\0" * 37)[:37]
@@ -47,7 +49,7 @@ def getServerResponse(data, host, path):
 	response = conn.getresponse()
 
 	if response.status != 200:
-		raise HTTPError("%s returned status %i" % (host, response.status))
+		raise HTTPError("%s returned status %i" % (host, response.status), response)
 
 	ret = response.read()
 	conn.close()
