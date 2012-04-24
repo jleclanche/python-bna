@@ -9,6 +9,7 @@ Python implementation by Jerome Leclanche <jerome.leclanche@gmail.com>
 
 __version__ = "3.0"
 
+import hmac
 from binascii import hexlify
 from hashlib import sha1
 try:
@@ -133,7 +134,6 @@ def getToken(secret, digits=8, seconds=30):
 	Returns the token, and the seconds remaining
 	for that token
 	"""
-	import hmac
 	from struct import pack, unpack
 	t = int(time())
 	msg = pack(">Q", int(t / seconds))
