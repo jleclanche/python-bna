@@ -21,10 +21,10 @@ RSA_KEY = 1048900188079865568740077109142054431570301596680341971861256789602874
 RSA_MOD = 257
 
 ENROLL_HOSTS = {
-	#"EU": "m.eu.mobileservice.blizzard.com",
-	#"US": "m.us.mobileservice.blizzard.com",
-	"EU": "eu.mobile-service.blizzard.com",
-	"US": "us.mobile-service.blizzard.com",
+	"EU": "m.eu.mobileservice.blizzard.com",
+	"US": "m.us.mobileservice.blizzard.com",
+	#"EU": "eu.mobile-service.blizzard.com",
+	#"US": "us.mobile-service.blizzard.com",
 	"default": "mobile-service.blizzard.com",
 }
 
