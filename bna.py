@@ -104,7 +104,7 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	if region not in ("EU", "US"):
 		raise ValueError("Unexpected region: %r" % (region))
 
-	return {"serial": serial, "secret": secret}
+	return serial, secret
 
 def bytesToRestoreCode(digest):
 	ret = []
