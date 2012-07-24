@@ -130,12 +130,12 @@ class Authenticator(object):
 
 	def queryNewAuthenticator(self, args):
 		try:
-			reply = bna.requestNewSerial(self.args.region)
+			serial, secret = bna.requestNewSerial(self.args.region)
 		except bna.HTTPError as e:
 			self.error("Could not connect: %s" % (e))
 
-		serial = bna.normalizeSerial(reply["serial"])
-		secret = hexlify(reply["secret"]).decode("ascii")
+		serial = bna.normalizeSerial(serial)
+		secret = hexlify(secret).decode("ascii")
 
 		self.addSerial(serial, secret)
 
