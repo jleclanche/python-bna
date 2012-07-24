@@ -79,6 +79,9 @@ class Authenticator(object):
 			token, timeRemaining = bna.getToken(secret=self._secret)
 			print(token)
 
+	def _serials(self):
+		return [x for x in self.config.sections() if x != "bna"]
+
 	def error(self, txt):
 		sys.stderr.write("Error: %s\n" % (txt))
 		exit(1)
@@ -116,10 +119,7 @@ class Authenticator(object):
 	def listSerials(self):
 		default = self.getDefaultSerial()
 		total = 0
-		for serial, _ in self.config.items():
-			if serial in ("DEFAULT", "bna"):
-				continue
-
+		for serial in self._serials():
 			if serial == default:
 				print("%s (default)" % (serial))
 			else:
