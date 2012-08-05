@@ -109,6 +109,10 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 def bytesToRestoreCode(digest):
 	ret = []
 	for i in digest:
+		# Python2 compat
+		if isinstance(i, str):
+			i = ord(i)
+
 		c = i & 0x1f
 		if c < 10:
 			c += 48
