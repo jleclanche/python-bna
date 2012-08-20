@@ -1,0 +1,5 @@
+MANIFEST.in
+README.rst
+bna.py
+setup.py
+bin/bna
