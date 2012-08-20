@@ -28,7 +28,10 @@ class Authenticator(object):
 		self.args = arguments.parse_args(args)
 
 		self.config = ConfigParser()
-		self.config.read([self.configFile()])
+		try:
+			self.config.read([self.configFile()])
+		except Exception as e:
+			self.error("Could not parse config file %r: %s" % (self.configFile(), e))
 
 		# Are we requesting a new authenticator?
 		if self.args.new:
@@ -196,8 +199,11 @@ class Authenticator(object):
 		self.writeConfig()
 
 	def writeConfig(self):
-		with open(self.configFile(), "w") as f:
-			self.config.write(f)
+		try:
+			with open(self.configFile(), "w") as f:
+				self.config.write(f)
+		except IOError as e:
+			self.error("Could not open %r for writing: %s" % (self.configFile(), e))
 
 	def getSecret(self, serial):
 		if not self.config.has_section(serial):
