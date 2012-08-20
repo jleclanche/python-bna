@@ -52,7 +52,10 @@ class Authenticator(object):
 		if not self.args.serial:
 			serial = self.getDefaultSerial()
 			if serial is None:
-				self.error("You must provide an authenticator serial or set a default one with --set-default")
+				if self._serials():
+					self.error("You do not have a default serial set. must provide an authenticator serial or set a default one with 'bna --set-default'.")
+				else:
+					self.error("You do not have any configured authenticators. Create a new one with 'bna --new' or try 'bna --help' for more information")
 		else:
 			serial = self.args.serial
 		serial = bna.normalizeSerial(serial)
