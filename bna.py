@@ -7,7 +7,7 @@ Specification can be found here:
 Python implementation by Jerome Leclanche <jerome.leclanche@gmail.com>
 """
 
-__version__ = "3.0"
+__version__ = "3.1"
 
 import hmac
 from binascii import hexlify
