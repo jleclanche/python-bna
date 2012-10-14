@@ -24,6 +24,7 @@ RSA_KEY = 257
 ENROLL_HOSTS = {
 	"EU": "m.eu.mobileservice.blizzard.com",
 	"US": "m.us.mobileservice.blizzard.com",
+	"CN": "mobile-service.battlenet.com.cn",
 	#"EU": "eu.mobile-service.blizzard.com",
 	#"US": "us.mobile-service.blizzard.com",
 	"default": "mobile-service.blizzard.com",
@@ -101,7 +102,7 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	serial = response[20:].decode()
 
 	region = serial[:2]
-	if region not in ("EU", "US"):
+	if region not in ("EU", "US", "CN"):
 		raise ValueError("Unexpected region: %r" % (region))
 
 	return serial, secret
