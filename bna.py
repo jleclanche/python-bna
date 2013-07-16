@@ -160,6 +160,21 @@ def getToken(secret, digits=8, seconds=30, time=None):
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
 
+def getTimeOffset(region="US", path="/enrollment/time.htm"):
+	"""
+	Calculates the time difference in seconds as
+	a floating point number between the local
+	host and a Blizzard server
+	"""
+	from struct import unpack
+
+	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
+	response = getServerResponse(None, host, path)
+
+	time = int(unpack(">Q", response)[0])
+	difference = time - int(currenttime() * 1000)
+	return difference / 1000.0
+
 
 def normalizeSerial(serial):
 	"""
