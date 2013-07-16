@@ -16,7 +16,7 @@ try:
 	from http.client import HTTPConnection
 except ImportError:
 	from httplib import HTTPConnection
-from time import time
+from time import time as currenttime
 
 RSA_MOD = 104890018807986556874007710914205443157030159668034197186125678960287470894290830530618284943118405110896322835449099433232093151168250152146023319326491587651685252774820340995950744075665455681760652136576493028733914892166700899109836291180881063097461175643998356321993663868233366705340758102567742483097
 RSA_KEY = 257
@@ -24,6 +24,7 @@ RSA_KEY = 257
 ENROLL_HOSTS = {
 	"EU": "m.eu.mobileservice.blizzard.com",
 	"US": "m.us.mobileservice.blizzard.com",
+	"CN": "mobile-service.battlenet.com.cn",
 	#"EU": "eu.mobile-service.blizzard.com",
 	#"US": "us.mobile-service.blizzard.com",
 	"default": "mobile-service.blizzard.com",
@@ -36,7 +37,7 @@ class HTTPError(Exception):
 
 def getOneTimePad(length):
 	def timedigest():
-		return sha1(str(time()).encode()).digest()
+		return sha1(str(currenttime()).encode()).digest()
 
 	return (timedigest() + timedigest())[:length]
 
@@ -101,7 +102,7 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 	serial = response[20:].decode()
 
 	region = serial[:2]
-	if region not in ("EU", "US"):
+	if region not in ("EU", "US", "CN"):
 		raise ValueError("Unexpected region: %r" % (region))
 
 	return serial, secret
@@ -135,13 +136,17 @@ def getRestoreCode(serial, secret):
 	digest = sha1(data).digest()[-10:]
 	return bytesToRestoreCode(digest)
 
-def getToken(secret, digits=8, seconds=30, time=time()):
+def getToken(secret, digits=8, seconds=30, time=None):
 	"""
 	Computes the token for a given secret
 	Returns the token, and the seconds remaining
 	for that token
 	"""
 	from struct import pack, unpack
+
+	if time is None:
+		time = currenttime()
+
 	t = int(time)
 	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
@@ -154,6 +159,21 @@ def getToken(secret, digits=8, seconds=30, time=time()):
 	idx = k & 0x0f
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
+
+def getTimeOffset(region="US", path="/enrollment/time.htm"):
+	"""
+	Calculates the time difference in seconds as
+	a floating point number between the local
+	host and a Blizzard server
+	"""
+	from struct import unpack
+
+	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
+	response = getServerResponse(None, host, path)
+
+	time = int(unpack(">Q", response)[0])
+	difference = time - int(currenttime() * 1000)
+	return difference / 1000.0
 
 
 def normalizeSerial(serial):
