@@ -137,12 +137,14 @@ def getRestoreCode(serial, secret):
 	digest = sha1(data).digest()[-10:]
 	return bytesToRestoreCode(digest)
 
-def getToken(secret, digits=8, seconds=30, time=time()):
+def getToken(secret, digits=8, seconds=30, time=time):
 	"""
 	Computes the token for a given secret
 	Returns the token, and the seconds remaining
 	for that token
 	"""
+	if hasattr(time, "__call__"):
+		time = time()
 	t = int(time)
 	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
