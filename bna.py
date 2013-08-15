@@ -4,10 +4,12 @@ Battle.net Authenticator routines in Python.
 
 Specification can be found here:
   <http://bnetauth.freeportal.us/specification.html>
-Python implementation by Jerome Leclanche <jerome.leclanche@gmail.com>
+Note: Link likely dead. Check webarchive.
 """
 
-__version__ = "3.1"
+__author__ = "Jerome Leclanche"
+__email__ = "jerome.leclanche+pypi@gmail.com"
+__version__ = "3.2"
 
 import hmac
 from binascii import hexlify
