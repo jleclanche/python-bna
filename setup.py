@@ -15,18 +15,17 @@ CLASSIFIERS = [
 ]
 
 import bna
-VERSION = bna.__version__
 
 setup(
 	name = "python-bna",
 	py_modules = ["bna"],
 	scripts = ["bin/bna"],
-	author = "Jerome Leclanche",
-	author_email = "jerome.leclanche+pypi@gmail.com",
+	author = bna.__author__,
+	author_email = bna.__email__,
 	classifiers = CLASSIFIERS,
 	description = "Battle.net Authenticator routines in Python.",
 	download_url = "https://github.com/Adys/python-bna/tarball/master",
 	long_description = README,
 	url = "https://github.com/Adys/python-bna",
-	version = VERSION,
+	version = bna.__version__,
 )
