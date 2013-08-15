@@ -16,6 +16,7 @@ try:
 	from http.client import HTTPConnection
 except ImportError:
 	from httplib import HTTPConnection
+from struct import pack, unpack
 from time import time
 
 RSA_MOD = 104890018807986556874007710914205443157030159668034197186125678960287470894290830530618284943118405110896322835449099433232093151168250152146023319326491587651685252774820340995950744075665455681760652136576493028733914892166700899109836291180881063097461175643998356321993663868233366705340758102567742483097
@@ -142,7 +143,6 @@ def getToken(secret, digits=8, seconds=30, time=time()):
 	Returns the token, and the seconds remaining
 	for that token
 	"""
-	from struct import pack, unpack
 	t = int(time)
 	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
@@ -156,6 +156,24 @@ def getToken(secret, digits=8, seconds=30, time=time()):
 	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
 
+def getTimeOffset(region="US", path="/enrollment/time.htm"):
+	"""
+	Calculates the time difference in seconds as a float
+	between the local host and a remote server
+
+	NOTE: The server returns time in milliseconds as an int while
+	Python returns it as a float, in seconds.
+
+	This function returns the difference in milliseconds as an int.
+	Negative numbers indicate the local clock is ahead of the
+	server clock.
+	"""
+	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
+	response = getServerResponse(None, host, path)
+	t = time()
+	remoteTime = int(unpack(">Q", response)[0])
+
+	return remoteTime - int(t * 1000)
 
 def normalizeSerial(serial):
 	"""
