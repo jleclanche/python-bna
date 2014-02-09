@@ -23,9 +23,9 @@ Getting an authentication token
 ::
 
 	$ bna
-	01234567
+	01234567 (25s remaining)
 	$ bna EU-1234-1234-1234
-	76543210
+	76543210 (5s remaining)
 
 Getting a serial's restore code
 -------------------------------
