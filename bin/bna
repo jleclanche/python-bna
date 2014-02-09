@@ -20,7 +20,7 @@ class Authenticator(object):
 		arguments.add_argument("-i", "--interactive", action="store_true", dest="update", help="interactive mode: updates the token as soon as it expires")
 		arguments.add_argument("-l", "--list", action="store_true", dest="list", help="list all your active serials and exit")
 		arguments.add_argument("-r", "--region", type=str, dest="region", default="US", help="desired region for new authenticators")
-		arguments.add_argument("--remaining", action="store_true", dest="remaining", help="also print the remaining time until the token expires")
+		arguments.add_argument("--token-only", action="store_true", dest="tokenonly", help="prints only the token, without the time until it expires")
 		arguments.add_argument("--restore", nargs=2, type=str, dest="restore", metavar=("SERIAL", "CODE"), help="restores an existing authenticator")
 		arguments.add_argument("--restore-code", action="store_true", dest="restorecode", help="prints a serial's restore code and exit")
 		arguments.add_argument("--set-default", action="store_true", dest="setdefault", help="set authenticator as default (also works when requesting a new authenticator)")
@@ -86,10 +86,10 @@ class Authenticator(object):
 			self.runLive()
 		else:
 			token, timeRemaining = bna.getToken(secret=self._secret)
-			if self.args.remaining:
-				print("%08i (%02is remaining)" % (token, timeRemaining))
+			if self.args.tokenonly:
+				print("%08i" % (token))
 			else:
-				print(token)
+				print("%08i (%02is remaining)" % (token, timeRemaining))
 
 	def _serials(self):
 		return [x for x in self.config.sections() if x != "bna"]
@@ -162,10 +162,10 @@ class Authenticator(object):
 		print("Ctrl-C to exit")
 		while 1:
 			token, timeRemaining = bna.getToken(secret=self._secret)
-			if self.args.remaining:
-				sys.stdout.write("\r%08i (%02is remaining)" % (token, timeRemaining))
-			else:
+			if self.args.tokenonly:
 				sys.stdout.write("\r%08i" % (token))
+			else:
+				sys.stdout.write("\r%08i (%02is remaining)" % (token, timeRemaining))
 			sys.stdout.flush()
 			sleep(1)
 
