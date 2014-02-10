@@ -89,7 +89,7 @@ class Authenticator(object):
 			if self.args.remaining:
 				print("%08i (%02is remaining)" % (token, timeRemaining))
 			else:
-				print(token)
+				print("%08i" % (token))
 
 	def _serials(self):
 		return [x for x in self.config.sections() if x != "bna"]
