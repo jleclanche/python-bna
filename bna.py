@@ -8,7 +8,7 @@ Note: Link likely dead. Check webarchive.
 """
 
 __author__ = "Jerome Leclanche"
-__email__ = "jerome.leclanche+pypi@gmail.com"
+__email__ = "jerome@leclan.ch"
 __version__ = "3.2"
 
 import hmac
