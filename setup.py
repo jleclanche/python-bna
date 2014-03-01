@@ -28,8 +28,8 @@ setup(
 	author_email = bna.__email__,
 	classifiers = CLASSIFIERS,
 	description = "Battle.net Authenticator routines in Python.",
-	download_url = "https://github.com/Adys/python-bna/tarball/master",
+	download_url = "https://github.com/jleclanche/python-bna/tarball/master",
 	long_description = README,
-	url = "https://github.com/Adys/python-bna",
+	url = "https://github.com/jleclanche/python-bna",
 	version = bna.__version__,
 )
