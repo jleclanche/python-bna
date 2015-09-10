@@ -19,7 +19,7 @@ CLASSIFIERS = [
 ]
 
 setup(
-	name="python-bna",
+	name="bna",
 	py_modules=["bna"],
 	scripts=["bin/bna"],
 	author=bna.__author__,
