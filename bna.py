@@ -10,10 +10,7 @@ Note: Link likely dead. Check webarchive.
 import hmac
 from binascii import hexlify
 from hashlib import sha1
-try:
-	from http.client import HTTPConnection
-except ImportError:
-	from httplib import HTTPConnection
+from http.client import HTTPConnection
 from struct import pack, unpack
 from time import time
 
@@ -87,11 +84,6 @@ def encrypt(data):
 def decrypt(response, otp):
 	ret = bytearray()
 	for c, e in zip(response, otp):
-		# python2 compatibility
-		if isinstance(c, str):
-			c = ord(c)
-			e = ord(e)
-
 		ret.append(c ^ e)
 	return ret
 
@@ -128,10 +120,6 @@ def request_new_serial(region="US", model="Motorola RAZR v3"):
 def bytes_to_restore_code(digest):
 	ret = []
 	for i in digest:
-		# Python2 compat
-		if isinstance(i, str):
-			i = ord(i)
-
 		c = i & 0x1f
 		if c < 10:
 			c += 48
@@ -168,11 +156,6 @@ def get_token(secret, digits=8, seconds=30, time=time):
 	msg = pack(">Q", int(t / seconds))
 	r = hmac.new(secret, msg, sha1).digest()
 	k = r[19]
-
-	# Python2 compat
-	if isinstance(k, str):
-		k = ord(k)
-
 	idx = k & 0x0f
 	h = unpack(">L", r[idx:idx + 4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
