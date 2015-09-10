@@ -3,13 +3,9 @@ python-bna
 Battle.net Authenticator routines in Python.
 
 Specification can be found here:
-  <http://bnetauth.freeportal.us/specification.html>
+* <http://bnetauth.freeportal.us/specification.html>
 Note: Link likely dead. Check webarchive.
 """
-
-__author__ = "Jerome Leclanche"
-__email__ = "jerome@leclan.ch"
-__version__ = "3.2"
 
 import hmac
 from binascii import hexlify
@@ -20,6 +16,12 @@ except ImportError:
 	from httplib import HTTPConnection
 from struct import pack, unpack
 from time import time
+
+
+__author__ = "Jerome Leclanche"
+__email__ = "jerome@leclan.ch"
+__version__ = "3.2"
+
 
 RSA_MOD = 104890018807986556874007710914205443157030159668034197186125678960287470894290830530618284943118405110896322835449099433232093151168250152146023319326491587651685252774820340995950744075665455681760652136576493028733914892166700899109836291180881063097461175643998356321993663868233366705340758102567742483097
 RSA_KEY = 257
@@ -33,18 +35,25 @@ ENROLL_HOSTS = {
 	"default": "mobile-service.blizzard.com",
 }
 
+INIT_RESTORE_PATH = "/enrollment/initiate_paper_restore.htm"
+VALIDATE_RESTORE_PATH = "/enrollment/validate_paper_restore.htm"
+ENROLL_PATH = "/enrollment/enroll.htm"
+
+
 class HTTPError(Exception):
 	def __init__(self, msg, response):
 		self.response = response
 		super(HTTPError, self).__init__(msg)
 
-def getOneTimePad(length):
+
+def get_one_time_pad(length):
 	def timedigest():
 		return sha1(str(time()).encode()).digest()
 
 	return (timedigest() + timedigest())[:length]
 
-def getServerResponse(data, host, path):
+
+def get_server_response(data, host, path):
 	"""
 	Send computed data to Blizzard servers
 	Return the answer from the server
@@ -60,8 +69,10 @@ def getServerResponse(data, host, path):
 	conn.close()
 	return ret
 
-def enroll(data, host=ENROLL_HOSTS["default"], path="/enrollment/enroll.htm"):
-	return getServerResponse(data, host, path)
+
+def enroll(data, host=ENROLL_HOSTS["default"], path=ENROLL_PATH):
+	return get_server_response(data, host, path)
+
 
 def encrypt(data):
 	data = int(hexlify(data), 16)
@@ -71,6 +82,7 @@ def encrypt(data):
 		n, m = divmod(n, 256)
 		ret = chr(m) + ret
 	return ret
+
 
 def decrypt(response, otp):
 	ret = bytearray()
@@ -83,22 +95,24 @@ def decrypt(response, otp):
 		ret.append(c ^ e)
 	return ret
 
-def requestNewSerial(region="US", model="Motorola RAZR v3"):
+
+def request_new_serial(region="US", model="Motorola RAZR v3"):
 	"""
 	Requests a new authenticator
 	This will connect to the Blizzard servers
 	"""
-	def baseMsg(otp, region, model):
+	def base_msg(otp, region, model):
 		ret = (otp + b"\0" * 37)[:37]
 		ret += region.encode() or b"\0\0"
 		ret += (model.encode() + b"\0" * 16)[:16]
 		return b"\1" + ret
 
-	otp = getOneTimePad(37)
-	data = baseMsg(otp, region, model)
+	otp = get_one_time_pad(37)
+	data = base_msg(otp, region, model)
 
 	e = encrypt(data)
-	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"]) # get the host, or fallback to default
+	# get the host, or fallback to default
+	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
 	response = decrypt(enroll(e, host)[8:], otp)
 
 	secret = bytes(response[:20])
@@ -110,7 +124,8 @@ def requestNewSerial(region="US", model="Motorola RAZR v3"):
 
 	return serial, secret
 
-def bytesToRestoreCode(digest):
+
+def bytes_to_restore_code(digest):
 	ret = []
 	for i in digest:
 		# Python2 compat
@@ -122,24 +137,26 @@ def bytesToRestoreCode(digest):
 			c += 48
 		else:
 			c += 55
-			if c > 72: # I
+			if c > 72:  # I
 				c += 1
-			if c > 75: # L
+			if c > 75:  # L
 				c += 1
-			if c > 78: # O
+			if c > 78:  # O
 				c += 1
-			if c > 82: # S
+			if c > 82:  # S
 				c += 1
 		ret.append(chr(c))
 
 	return "".join(ret)
 
-def getRestoreCode(serial, secret):
+
+def get_restore_code(serial, secret):
 	data = (serial.encode() + secret)
 	digest = sha1(data).digest()[-10:]
-	return bytesToRestoreCode(digest)
+	return bytes_to_restore_code(digest)
 
-def getToken(secret, digits=8, seconds=30, time=time):
+
+def get_token(secret, digits=8, seconds=30, time=time):
 	"""
 	Computes the token for a given secret
 	Returns the token, and the seconds remaining
@@ -157,10 +174,11 @@ def getToken(secret, digits=8, seconds=30, time=time):
 		k = ord(k)
 
 	idx = k & 0x0f
-	h = unpack(">L", r[idx:idx+4])[0] & 0x7fffffff
+	h = unpack(">L", r[idx:idx + 4])[0] & 0x7fffffff
 	return h % (10 ** digits), -(t % seconds - seconds)
 
-def getTimeOffset(region="US", path="/enrollment/time.htm"):
+
+def get_time_offset(region="US", path="/enrollment/time.htm"):
 	"""
 	Calculates the time difference in seconds as a float
 	between the local host and a remote server
@@ -173,13 +191,14 @@ def getTimeOffset(region="US", path="/enrollment/time.htm"):
 	server clock.
 	"""
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
-	response = getServerResponse(None, host, path)
+	response = get_server_response(None, host, path)
 	t = time()
 	remoteTime = int(unpack(">Q", response)[0])
 
 	return remoteTime - int(t * 1000)
 
-def normalizeSerial(serial):
+
+def normalize_serial(serial):
 	"""
 	Normalizes a serial
 	Will uppercase it, remove its dashes and strip
@@ -187,12 +206,13 @@ def normalizeSerial(serial):
 	"""
 	return serial.upper().replace("-", "").strip()
 
-def prettifySerial(serial):
+
+def prettify_serial(serial):
 	"""
 	Returns the prettified version of a serial
 	It should look like XX-AAAA-BBBB-CCCC-DDDD
 	"""
-	serial = normalizeSerial(serial)
+	serial = normalize_serial(serial)
 	if len(serial) != 14:
 		raise ValueError("serial %r should be 14 characters long" % (serial))
 
@@ -201,31 +221,37 @@ def prettifySerial(serial):
 			raise ValueError("bad serial %r" % (serial))
 		return "%04i" % int((chars))
 
-	return "%s-%s-%s-%s" % (serial[0:2].upper(), digits(serial[2:6]), digits(serial[6:10]), digits(serial[10:14]))
+	return "%s-%s-%s-%s" % (
+		serial[0:2].upper(),
+		digits(serial[2:6]),
+		digits(serial[6:10]),
+		digits(serial[10:14])
+	)
 
 
 # restore functions, as reverse-engineered from the android implementation
 
 def restore(serial, code):
-	serial = normalizeSerial(serial)
+	serial = normalize_serial(serial)
 	if len(code) != 10:
 		raise ValueError("invalid restore code (should be 10 bytes): %r" % (code))
 
-	challenge = initiatePaperRestore(serial)
+	challenge = initiate_paper_restore(serial)
 	if len(challenge) != 32:
 		raise HTTPError("Invalid challenge length (expected 32, got %i)" % (len(challenge)))
 
-	code = restoreCodeToBytes(code)
+	code = restore_code_to_bytes(code)
 	hash = hmac.new(code, serial.encode() + challenge, digestmod=sha1).digest()
 
-	otp = getOneTimePad(20)
+	otp = get_one_time_pad(20)
 	e = encrypt(hash + otp)
-	response = validatePaperRestore(serial + e)
+	response = validate_paper_restore(serial + e)
 	secret = decrypt(response, otp)
 
 	return secret
 
-def restoreCodeToBytes(code):
+
+def restore_code_to_bytes(code):
 	ret = bytearray()
 	for c in code:
 		c = ord(c)
@@ -246,12 +272,14 @@ def restoreCodeToBytes(code):
 
 	return bytes(ret)
 
-def initiatePaperRestore(serial, host=ENROLL_HOSTS["default"], path="/enrollment/initiatePaperRestore.htm"):
-	return getServerResponse(serial, host, path)
 
-def validatePaperRestore(data, host=ENROLL_HOSTS["default"], path="/enrollment/validatePaperRestore.htm"):
+def initiate_paper_restore(serial, host=ENROLL_HOSTS["default"], path=INIT_RESTORE_PATH):
+	return get_server_response(serial, host, path)
+
+
+def validate_paper_restore(data, host=ENROLL_HOSTS["default"], path=VALIDATE_RESTORE_PATH):
 	try:
-		response = getServerResponse(data, host, path)
+		response = get_server_response(data, host, path)
 	except HTTPError as e:
 		if e.response.status == 600:
 			raise HTTPError("Invalid serial or restore key", e.response)

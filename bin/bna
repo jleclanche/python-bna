@@ -91,136 +91,78 @@ class Authenticator(object):
 		except Exception as e:
 			self.error("Could not parse config file %r: %s" % (self.configFile(), e))
 
-		# Are we requesting a new authenticator?
-		if self.args.new:
-			self.queryNewAuthenticator(args)
-			exit()
-
-		if self.args.delete:
-			if not self.args.serial:
-				self.error("You must provide a serial with --delete")
-			self.deleteSerial(self.args.serial)
-			exit()
-
-		if self.args.list:
-			self.listSerials()
-			exit()
-
-		if self.args.restore:
-			self.restoreSerial(*self.args.restore)
-			exit()
-
-		if not self.args.serial:
-			serial = self.getDefaultSerial()
-			if serial is None:
-				if self._serials():
-					self.error("You do not have a default serial set. must provide an authenticator serial or set a default one with 'bna --set-default'.")
-				else:
-					self.error("You do not have any configured authenticators. Create a new one with 'bna --new' or try 'bna --help' for more information")
-		else:
-			serial = self.args.serial
-		serial = bna.normalizeSerial(serial)
-
-		# Are we setting a serial as default?
-		if self.args.setdefault:
-			self.setDefaultSerial(serial)
-
-		# Get the secret from the keyring
-		self._secret = self.getSecret(serial)
-		if sys.version_info < (2, 7):
-			self._secret = self._secret.decode("utf-8")
-		if not self._secret:
-			self.error("No such serial: %r" % (serial))
-		self._secret = unhexlify(self._secret)
-
-		# Print the restore code if the user asked for it
-		if self.args.restorecode:
-			self.printRestoreCode(serial)
-			exit()
-
-		# otherwise print the token
-		if self.args.update:
-			self.runLive()
-		else:
-			token, timeRemaining = bna.getToken(secret=self._secret)
-			if self.args.remaining:
-				print("%08i (%02is remaining)" % (token, timeRemaining))
-			else:
-				print("%08i" % (token))
-
 	def _serials(self):
 		return [x for x in self.config.sections() if x != "bna"]
 
-	def error(self, txt):
-		sys.stderr.write("Error: %s\n" % (txt))
+	def error(self, msg):
+		sys.stderr.write("Error: %s\n" % (msg))
 		exit(1)
 
-	def addSerial(self, serial, secret):
-		self.setSecret(serial, secret)
+	def print(self, msg):
+		print(msg)
+
+	def add_serial(self, serial, secret):
+		self.set_secret(serial, secret)
 
 		# We set the serial as default if we don't have one set already
 		# Otherwise, we check for --set-default
-		if self.args.setdefault or not self.getDefaultSerial():
-			self.setDefaultSerial(serial)
+		if self.args.setdefault or not self.get_default_serial():
+			self.set_default_serial(serial)
 
-	def deleteSerial(self, serial):
-		serial = bna.normalizeSerial(serial)
+	def delete_serial(self, serial):
+		serial = bna.normalize_serial(serial)
 		if not self.config.has_section(serial):
 			self.error("No such serial: %r" % (serial))
 		self.config.remove_section(serial)
 
 		# If it's the default serial, remove that
-		if serial == self.getDefaultSerial():
+		if serial == self.get_default_serial():
 			self.config.remove_option("bna", "default_serial")
 
 		self.writeConfig()
-		print("Successfully deleted serial %s" % (bna.prettifySerial(serial)))
+		self.print("Successfully deleted serial %s" % (bna.prettify_serial(serial)))
 
-	def restoreSerial(self, serial, code):
-		serial = bna.normalizeSerial(serial)
+	def restore_serial(self, serial, code):
+		serial = bna.normalize_serial(serial)
 		if self.config.has_option(serial, "secret"):
 			self.error("A secret already exists for this serial. Try deleting it first with bna --delete %s" % (serial))
 
 		secret = bna.restore(serial, code)
-		self.addSerial(serial, hexlify(secret).decode("ascii"))
-		print("Restored serial %s" % (bna.prettifySerial(serial)))
+		self.add_serial(serial, hexlify(secret).decode("ascii"))
+		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
 
-	def listSerials(self):
-		default = self.getDefaultSerial()
+	def list_serials(self):
+		default = self.get_default_serial()
 		total = 0
 		for serial in self._serials():
 			if serial == default:
-				print("%s (default)" % (serial))
+				self.print("%s (default)" % (serial))
 			else:
-				print(serial)
+				self.print(serial)
 			total += 1
 
-		print("%i items" % (total))
+		self.print("%i items" % (total))
 
-	def queryNewAuthenticator(self, args):
+	def query_new_authenticator(self):
 		try:
-			serial, secret = bna.requestNewSerial(self.args.region)
+			serial, secret = bna.request_new_serial(self.args.region)
 		except bna.HTTPError as e:
 			self.error("Could not connect: %s" % (e))
 
-		serial = bna.normalizeSerial(serial)
+		serial = bna.normalize_serial(serial)
 		secret = hexlify(secret).decode("ascii")
 
-		self.addSerial(serial, secret)
+		self.add_serial(serial, secret)
 
-		print("Success. Your new serial is: %s" % (bna.prettifySerial(serial)))
+		self.print("Success. Your new serial is: %s" % (bna.prettify_serial(serial)))
 
-	def printRestoreCode(self, serial):
-		code = bna.getRestoreCode(serial, self._secret)
-		print(code)
-
-	def runLive(self):
+	def run_live(self):
 		from time import sleep
-		print("Ctrl-C to exit")
+		self.print("Ctrl-C to exit")
 		while 1:
-			token, timeRemaining = bna.getToken(secret=self._secret)
+			token, time_remaining = bna.get_token(secret=self._secret)
 			if self.args.remaining:
-				sys.stdout.write("\r%08i (%02is remaining)" % (token, timeRemaining))
+				sys.stdout.write("\r%08i (%02is remaining)" % (token, time_remaining))
 			else:
 				sys.stdout.write("\r%08i" % (token))
 			sys.stdout.flush()
@@ -251,12 +193,12 @@ class Authenticator(object):
 
 		return os.path.join(configDir(), "bna.conf")
 
-	def getDefaultSerial(self):
+	def get_default_serial(self):
 		if not self.config.has_option("bna", "default_serial"):
 			return None
 		return self.config.get("bna", "default_serial")
 
-	def setDefaultSerial(self, serial):
+	def set_default_serial(self, serial):
 		if not self.config.has_section("bna"):
 			self.config.add_section("bna")
 		self.config.set("bna", "default_serial", serial)
@@ -269,24 +211,88 @@ class Authenticator(object):
 		except IOError as e:
 			self.error("Could not open %r for writing: %s" % (self.configFile(), e))
 
-	def getSecret(self, serial):
+	def get_secret(self, serial):
 		if not self.config.has_section(serial):
 			return None
 
 		secret = self.config.get(serial, "secret")
 		return bytearray(secret, "ascii")
 
-	def setSecret(self, serial, secret):
+	def set_secret(self, serial, secret):
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
 
 		self.writeConfig()
 
+	def run(self):
+		# Are we requesting a new authenticator?
+		if self.args.new:
+			self.query_new_authenticator()
+			return 0
+
+		if self.args.delete:
+			if not self.args.serial:
+				self.error("You must provide a serial with --delete")
+			self.delete_serial(self.args.serial)
+			return 0
+
+		if self.args.list:
+			self.list_serials()
+			return 0
+
+		if self.args.restore:
+			self.restore_serial(*self.args.restore)
+			return 0
+
+		if not self.args.serial:
+			serial = self.get_default_serial()
+			if serial is None:
+				if self._serials():
+					self.error("You do not have a default serial set. must provide an authenticator serial or set a default one with 'bna --set-default'.")
+				else:
+					self.error("You do not have any configured authenticators. Create a new one with 'bna --new' or try 'bna --help' for more information")
+		else:
+			serial = self.args.serial
+		serial = bna.normalize_serial(serial)
+
+		# Are we setting a serial as default?
+		if self.args.setdefault:
+			self.set_default_serial(serial)
+
+		# Get the secret from the keyring
+		self._secret = self.get_secret(serial)
+		if sys.version_info < (2, 7):
+			self._secret = self._secret.decode("utf-8")
+		if not self._secret:
+			self.error("No such serial: %r" % (serial))
+		self._secret = unhexlify(self._secret)
+
+		# Print the restore code if the user asked for it
+		if self.args.restorecode:
+			code = bna.get_restore_code(serial, self._secret)
+			self.print(code)
+			return 0
+
+		# otherwise print the token
+		if self.args.update:
+			self.run_live()
+		else:
+			token, time_remaining = bna.get_token(secret=self._secret)
+			if self.args.remaining:
+				self.print("%08i (%02is remaining)" % (token, time_remaining))
+			else:
+				self.print("%08i" % (token))
+
+		return 0
+
+
 def main():
 	import signal
 	signal.signal(signal.SIGINT, signal.SIG_DFL)
 	authenticator = Authenticator(sys.argv[1:])
+	return authenticator.run()
+
 
 if __name__ == "__main__":
-	main()
+	exit(main())

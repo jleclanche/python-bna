@@ -47,7 +47,7 @@ Requesting a new authenticator
 	try:
 		# region is EU or US
 		# note that EU authenticators are valid in the US, and vice versa
-		serial, secret = bna.requestNewSerial("US")
+		serial, secret = bna.request_new_serial("US")
 	except bna.HTTPError as e:
 		print("Could not connect:", e)
 
@@ -56,12 +56,12 @@ Getting a token
 ::
 
 	# Get and print a token
-	token, timeRemaining = bna.getToken(secret=secret)
+	token, time_remaining = bna.get_token(secret=secret)
 	print(token)
 
 	# print a new token every time the previous one expires
 	from time import sleep
 	while True:
-		token, timeRemaining = bna.getToken(secret=secret)
+		token, time_remaining = bna.get_token(secret=secret)
 		print(token)
-		sleep(timeRemaining)
+		sleep(time_remaining)
