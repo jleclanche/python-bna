@@ -15,6 +15,8 @@ Tests for python-bna
 '4B91NQCYQ3'
 >>> bna.normalize_serial(bna.prettify_serial(serial)) == serial
 True
+>>> bna.get_otpauth_url(serial, secret)
+'otpauth://totp/Battle.net:US120910711868:?secret=HA4GCYLGMFRWKNBYGI4TCZJQHFSGGMLFMNSTSYZSMFQTINDEHAZTSOJYGNQTOZTG&issuer=Battle.net&digits=8'
 """
 
 if __name__ == "__main__":
