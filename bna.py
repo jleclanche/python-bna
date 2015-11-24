@@ -34,8 +34,8 @@ ENROLL_HOSTS = {
 	"default": "mobile-service.blizzard.com",
 }
 
-INIT_RESTORE_PATH = "/enrollment/initiate_paper_restore.htm"
-VALIDATE_RESTORE_PATH = "/enrollment/validate_paper_restore.htm"
+INIT_RESTORE_PATH = "/enrollment/initiatePaperRestore.htm"
+VALIDATE_RESTORE_PATH = "/enrollment/validatePaperRestore.htm"
 ENROLL_PATH = "/enrollment/enroll.htm"
 
 OTPAUTH_URI_FORMAT = "otpauth://totp/Battle.net:{serial}:?secret={secret}&issuer=Battle.net&digits=8"
