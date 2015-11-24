@@ -38,6 +38,8 @@ INIT_RESTORE_PATH = "/enrollment/initiate_paper_restore.htm"
 VALIDATE_RESTORE_PATH = "/enrollment/validate_paper_restore.htm"
 ENROLL_PATH = "/enrollment/enroll.htm"
 
+OTPAUTH_URI_FORMAT = "otpauth://totp/Battle.net:{serial}:?secret={secret}&issuer=Battle.net&digits=8"
+
 
 class HTTPError(Exception):
 	def __init__(self, msg, response):
@@ -260,7 +262,7 @@ def restore_code_to_bytes(code):
 
 def get_otpauth_url(serial, secret):
 	code = base64.b32encode(secret).decode()
-	otpurl = "otpauth://totp/Battle.net:{serial}:?secret={secret}&issuer=Battle.net&digits=8".format(serial=serial, secret=code)
+	otpurl = OTPAUTH_URI_FORMAT.format(serial=serial, secret=code)
 	return otpurl
 
 
