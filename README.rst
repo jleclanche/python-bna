@@ -36,6 +36,19 @@ Getting a serial's restore code
 	$ bna --restore EU-1234-1234-1234 ABCDE98765
 	Restored serial EU-1234-1234-1234
 
+OTP from Mobile
+---------------
+::
+
+	$ bna --otpauth-url
+	otpauth://totp/Battle.net:EU123412341234:?secret=ASFAS75ASDF75889G9AD7S69AS7697AS&issuer=Battle.net&digits=8
+
+
+Now paste this to your OTP app, or convert to QRCode and scan, or manually enter the secret.
+
+Note: This will not work with "Google Authenticator" as it does not support 8 digits, try "FreeOTP_"
+
+
 Using the python-bna library
 ============================
 
@@ -65,3 +78,6 @@ Getting a token
 		token, time_remaining = bna.get_token(secret=secret)
 		print(token)
 		sleep(time_remaining)
+
+
+.. _FreeOTP: https://fedorahosted.org/freeotp/

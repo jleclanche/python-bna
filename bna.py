@@ -7,7 +7,9 @@ Specification can be found here:
 Note: Link likely dead. Check webarchive.
 """
 
+import base64
 import hmac
+
 from binascii import hexlify
 from hashlib import sha1
 from http.client import HTTPConnection
@@ -254,6 +256,12 @@ def restore_code_to_bytes(code):
 		ret.append(c)
 
 	return bytes(ret)
+
+
+def get_otpauth_url(serial, secret):
+	code = base64.b32encode(secret).decode()
+	otpurl = "otpauth://totp/Battle.net:{serial}:?secret={secret}&issuer=Battle.net&digits=8".format(serial=serial, secret=code)
+	return otpurl
 
 
 def initiate_paper_restore(serial, host=ENROLL_HOSTS["default"], path=INIT_RESTORE_PATH):
