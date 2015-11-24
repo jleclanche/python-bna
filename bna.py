@@ -225,7 +225,7 @@ def restore(serial, code):
 
 	challenge = initiate_paper_restore(serial)
 	if len(challenge) != 32:
-		raise HTTPError("Invalid challenge length (expected 32, got %i)" % (len(challenge)))
+		raise ValueError("Invalid challenge length (expected 32, got %i)" % (len(challenge)))
 
 	code = restore_code_to_bytes(code)
 	hash = hmac.new(code, serial.encode() + challenge, digestmod=sha1).digest()
