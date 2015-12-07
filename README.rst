@@ -48,6 +48,22 @@ Now paste this to your OTP app, or convert to QRCode and scan, or manually enter
 
 Note: This will not work with "Google Authenticator" as it does not support 8 digits, try "FreeOTP_"
 
+QRCode
+~~~~~~
+
+To encode to a QRCode on your local system install 'qrencode'
+
+For a PNG file saved to disk
+::
+
+	$ bna --otpauth-url | qrencode -o ~/BNA-qrcode.png
+	# Scan QRCode
+	$ rm ~/BNA-qrcode.png
+
+Or to attempt ot display QRCode in terminal as text output
+::
+
+	$ bna --otpauth-url | qrencode -t ANSI
 
 Using the python-bna library
 ============================
