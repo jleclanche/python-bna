@@ -70,9 +70,9 @@ class Authenticator(object):
 			help="prints a serial's restore code and exit"
 		)
 		arguments.add_argument(
-		        "--otpauth-url",
-		        action="store_true",
-		        help="Print standard otpauth URL for use with OTP apps"
+			"--otpauth-url",
+			action="store_true",
+			help="Print standard otpauth URL for use with OTP apps"
 		)
 		arguments.add_argument(
 			"--set-default",
