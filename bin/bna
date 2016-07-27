@@ -133,6 +133,8 @@ class Authenticator(object):
 		self.add_serial(serial, hexlify(secret).decode("ascii"))
 		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
 
+		return serial, secret
+
 	def list_serials(self):
 		default = self.get_default_serial()
 		total = 0
@@ -152,17 +154,19 @@ class Authenticator(object):
 			self.error("Could not connect: %s" % (e))
 
 		serial = bna.normalize_serial(serial)
-		secret = hexlify(secret).decode("ascii")
+		_secret = hexlify(secret).decode("ascii")
 
-		self.add_serial(serial, secret)
+		self.add_serial(serial, _secret)
 
 		self.print("Success. Your new serial is: %s" % (bna.prettify_serial(serial)))
 
-	def run_live(self):
+		return serial, secret
+
+	def run_live(self, serial, secret):
 		from time import sleep
 		self.print("Ctrl-C to exit")
 		while 1:
-			token, time_remaining = bna.get_token(secret=self._secret)
+			token, time_remaining = bna.get_token(secret=secret)
 			if self.args.remaining:
 				sys.stdout.write("\r%08i (%02is remaining)" % (token, time_remaining))
 			else:
@@ -230,8 +234,8 @@ class Authenticator(object):
 	def run(self):
 		# Are we requesting a new authenticator?
 		if self.args.new:
-			self.query_new_authenticator()
-			return 0
+			serial, secret = self.query_new_authenticator()
+			return self.handle_authenticator(serial, secret)
 
 		if self.args.delete:
 			if not self.args.serial:
@@ -244,8 +248,8 @@ class Authenticator(object):
 			return 0
 
 		if self.args.restore:
-			self.restore_serial(*self.args.restore)
-			return 0
+			serial, secret = self.restore_serial(*self.args.restore)
+			return self.handle_authenticator(serial, secret)
 
 		if not self.args.serial:
 			serial = self.get_default_serial()
@@ -256,11 +260,6 @@ class Authenticator(object):
 					self.error("You do not have any configured authenticators. Create a new one with 'bna --new' or try 'bna --help' for more information")
 		else:
 			serial = self.args.serial
-		serial = bna.normalize_serial(serial)
-
-		# Are we setting a serial as default?
-		if self.args.setdefault:
-			self.set_default_serial(serial)
 
 		# Get the secret from the keyring
 		self._secret = self.get_secret(serial)
@@ -270,22 +269,31 @@ class Authenticator(object):
 			self.error("No such serial: %r" % (serial))
 		self._secret = unhexlify(self._secret)
 
+		return self.handle_authenticator(serial, self._secret)
+
+	def handle_authenticator(self, serial, secret):
+		serial = bna.normalize_serial(serial)
+
+		# Are we setting a serial as default?
+		if self.args.setdefault:
+			self.set_default_serial(serial)
+
 		# Print the restore code if the user asked for it
 		if self.args.restorecode:
-			code = bna.get_restore_code(serial, self._secret)
+			code = bna.get_restore_code(serial, secret)
 			self.print(code)
 			return 0
 
 		if self.args.otpauth_url:
-			url = bna.get_otpauth_url(serial, self._secret)
+			url = bna.get_otpauth_url(serial, secret)
 			self.print(url)
 			return 0
 
 		# otherwise print the token
 		if self.args.update:
-			self.run_live()
+			self.run_live(serial, secret)
 		else:
-			token, time_remaining = bna.get_token(secret=self._secret)
+			token, time_remaining = bna.get_token(secret=secret)
 			if self.args.remaining:
 				self.print("%08i (%02is remaining)" % (token, time_remaining))
 			else:
