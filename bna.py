@@ -38,7 +38,7 @@ INIT_RESTORE_PATH = "/enrollment/initiatePaperRestore.htm"
 VALIDATE_RESTORE_PATH = "/enrollment/validatePaperRestore.htm"
 ENROLL_PATH = "/enrollment/enroll.htm"
 
-OTPAUTH_URI_FORMAT = "otpauth://totp/Battle.net:{serial}:?secret={secret}&issuer=Battle.net&digits=8"
+OTPAUTH_URI_FORMAT = "otpauth://totp/Battle.net:{serial}?secret={secret}&issuer=Battle.net&digits=8"
 
 
 class HTTPError(Exception):
