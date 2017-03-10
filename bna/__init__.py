@@ -38,7 +38,7 @@ ENROLL_PATH = "/enrollment/enroll.htm"
 class HTTPError(Exception):
 	def __init__(self, msg, response):
 		self.response = response
-		super(HTTPError, self).__init__(msg)
+		super().__init__(msg)
 
 
 def get_one_time_pad(length):
