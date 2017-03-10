@@ -1,3 +1,11 @@
+==========
+python-bna
+==========
+
+.. image:: https://travis-ci.org/jleclanche/python-bna.png
+   :target: https://travis-ci.org/jleclanche/python-bna
+
+
 Using the command-line tool
 ===========================
 
