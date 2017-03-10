@@ -15,6 +15,7 @@ from hashlib import sha1
 from http.client import HTTPConnection
 from struct import pack, unpack
 from time import time
+from urllib.parse import urlencode, urlunparse
 
 
 RSA_MOD = 104890018807986556874007710914205443157030159668034197186125678960287470894290830530618284943118405110896322835449099433232093151168250152146023319326491587651685252774820340995950744075665455681760652136576493028733914892166700899109836291180881063097461175643998356321993663868233366705340758102567742483097
@@ -32,8 +33,6 @@ ENROLL_HOSTS = {
 INIT_RESTORE_PATH = "/enrollment/initiatePaperRestore.htm"
 VALIDATE_RESTORE_PATH = "/enrollment/validatePaperRestore.htm"
 ENROLL_PATH = "/enrollment/enroll.htm"
-
-OTPAUTH_URI_FORMAT = "otpauth://totp/Battle.net:{serial}?secret={secret}&issuer=Battle.net&digits=8"
 
 
 class HTTPError(Exception):
@@ -255,10 +254,13 @@ def restore_code_to_bytes(code):
 	return bytes(ret)
 
 
-def get_otpauth_url(serial, secret):
+def get_otpauth_url(serial, secret, issuer="Battle.net", digits=8):
 	code = base64.b32encode(secret).decode()
-	otpurl = OTPAUTH_URI_FORMAT.format(serial=serial, secret=code)
-	return otpurl
+	protocol = "otpauth"
+	type = "totp"
+	label = "%s:%s" % (issuer, serial)
+	params = {"secret": code, "issuer": issuer, "digits": 8}
+	return urlunparse(protocol, type, label, "", urlencode(params), "")
 
 
 def initiate_paper_restore(serial, host=ENROLL_HOSTS["default"], path=INIT_RESTORE_PATH):
