@@ -126,7 +126,10 @@ class Authenticator(object):
 	def restore_serial(self, serial, code):
 		serial = bna.normalize_serial(serial)
 		if self.config.has_option(serial, "secret"):
-			self.error("A secret already exists for this serial. Try deleting it first with bna --delete %s" % (serial))
+			self.error(
+				"A secret already exists for this serial. "
+				"Try deleting it first with bna --delete %s" % (serial)
+			)
 
 		secret = bna.restore(serial, code)
 		self.add_serial(serial, hexlify(secret).decode("ascii"))
@@ -254,9 +257,17 @@ class Authenticator(object):
 			serial = self.get_default_serial()
 			if serial is None:
 				if self._serials():
-					self.error("You do not have a default serial set. must provide an authenticator serial or set a default one with 'bna --set-default'.")
+					self.error(
+						"You do not have a default serial set. "
+						"Must provide an authenticator serial or set a default "
+						"one with 'bna --set-default'."
+					)
 				else:
-					self.error("You do not have any configured authenticators. Create a new one with 'bna --new' or try 'bna --help' for more information")
+					self.error(
+						"You do not have any configured authenticators. "
+						"Create a new one with 'bna --new' or try "
+						"'bna --help' for more information"
+					)
 		else:
 			serial = self.args.serial
 
