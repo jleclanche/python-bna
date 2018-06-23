@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import urllib.parse
+
 import bna
 
 

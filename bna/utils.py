@@ -2,10 +2,11 @@
 Utility functions
 """
 from base64 import b32encode
+from typing import Union
 from urllib.parse import urlencode, urlunparse
 
 
-def normalize_serial(serial):
+def normalize_serial(serial: str) -> str:
 	"""
 	Normalizes a serial
 	Will uppercase it, remove its dashes and strip
@@ -14,7 +15,7 @@ def normalize_serial(serial):
 	return serial.upper().replace("-", "").strip()
 
 
-def prettify_serial(serial):
+def prettify_serial(serial: str) -> str:
 	"""
 	Returns the prettified version of a serial
 	It should look like XX-AAAA-BBBB-CCCC-DDDD
@@ -36,14 +37,20 @@ def prettify_serial(serial):
 	)
 
 
-def get_otpauth_url(serial, secret, issuer="Battle.net", digits=8):
+def get_otpauth_url(
+	serial: str,
+	secret: Union[bytes, str],
+	issuer: str="Battle.net",
+	digits: int=8
+) -> str:
 	"""
 	Get the OTPAuth URL for the serial/secret pair
 	https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	"""
-	code = b32encode(secret).decode()
+	if not isinstance(secret, str):
+		secret = b32encode(secret)
 	protocol = "otpauth"
 	type = "totp"
 	label = "%s:%s" % (issuer, serial)
-	params = {"secret": code, "issuer": issuer, "digits": 8}
+	params = {"secret": secret, "issuer": issuer, "digits": 8}
 	return urlunparse((protocol, type, label, "", urlencode(params), ""))

@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from binascii import unhexlify
 from configparser import ConfigParser
 from string import hexdigits
+from typing import List, Tuple
 
 import bna
 
@@ -102,17 +103,17 @@ class Authenticator:
 		except Exception as e:
 			self.error("Could not parse config file %r: %s" % (self.config_file(), e))
 
-	def _serials(self):
+	def _serials(self) -> List[str]:
 		return [x for x in self.config.sections() if x != "bna"]
 
-	def error(self, msg):
+	def error(self, msg: str) -> None:
 		sys.stderr.write("Error: %s\n" % (msg))
 		exit(1)
 
-	def print(self, msg):
+	def print(self, msg: str) -> None:
 		print(msg)
 
-	def add_serial(self, serial, secret):
+	def add_serial(self, serial: str, secret: bytes) -> None:
 		self.set_secret(serial, secret)
 
 		# We set the serial as default if we don't have one set already
@@ -120,7 +121,7 @@ class Authenticator:
 		if self.args.setdefault or not self.get_default_serial():
 			self.set_default_serial(serial)
 
-	def delete_serial(self, serial):
+	def delete_serial(self, serial) -> None:
 		serial = bna.normalize_serial(serial)
 		if not self.config.has_section(serial):
 			self.error("No such serial: %r" % (serial))
@@ -133,7 +134,7 @@ class Authenticator:
 		self.write_config()
 		self.print("Successfully deleted serial %s" % (bna.prettify_serial(serial)))
 
-	def restore_serial(self, serial, code):
+	def restore_serial(self, serial: str, code: str) -> Tuple[str, str]:
 		serial = bna.normalize_serial(serial)
 		if self.config.has_option(serial, "secret"):
 			self.error(
@@ -147,7 +148,7 @@ class Authenticator:
 
 		return serial, base64.b32encode(secret)
 
-	def list_serials(self):
+	def list_serials(self) -> None:
 		default = self.get_default_serial()
 		total = 0
 		for serial in self._serials():
@@ -159,7 +160,7 @@ class Authenticator:
 
 		self.print("%i items" % (total))
 
-	def query_new_authenticator(self):
+	def query_new_authenticator(self) -> Tuple[str, str]:
 		try:
 			serial, secret = bna.request_new_serial(self.args.region)
 		except bna.HTTPError as e:
@@ -173,7 +174,7 @@ class Authenticator:
 
 		return serial, secret
 
-	def run_live(self, serial, secret):
+	def run_live(self, serial, secret) -> None:
 		from time import sleep
 		self.print("Ctrl-C to exit")
 		while 1:
@@ -210,25 +211,25 @@ class Authenticator:
 
 		return os.path.join(config_dir(), "bna.conf")
 
-	def get_default_serial(self):
+	def get_default_serial(self) -> str:
 		if not self.config.has_option("bna", "default_serial"):
-			return None
+			return ""
 		return self.config.get("bna", "default_serial")
 
-	def set_default_serial(self, serial):
+	def set_default_serial(self, serial) -> None:
 		if not self.config.has_section("bna"):
 			self.config.add_section("bna")
 		self.config.set("bna", "default_serial", serial)
 		self.write_config()
 
-	def write_config(self):
+	def write_config(self) -> None:
 		try:
 			with open(self.config_file(), "w") as f:
 				self.config.write(f)
 		except IOError as e:
 			self.error("Could not open %r for writing: %s" % (self.config_file(), e))
 
-	def get_secret(self, serial):
+	def get_secret(self, serial: str) -> str:
 		if not self.config.has_section(serial):
 			return ""
 
@@ -246,8 +247,8 @@ class Authenticator:
 
 		return secret
 
-	def set_secret(self, serial, secret):
-		secret = base64.b32encode(unhexlify(secret))
+	def set_secret(self, serial: str, secret: bytes) -> None:
+		secret = base64.b32encode(secret).decode()
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
@@ -276,7 +277,7 @@ class Authenticator:
 
 		if not self.args.serial:
 			serial = self.get_default_serial()
-			if serial is None:
+			if not serial:
 				if self._serials():
 					self.error(
 						"You do not have a default serial set. "
@@ -299,7 +300,7 @@ class Authenticator:
 
 		return self.handle_authenticator(serial, secret)
 
-	def handle_authenticator(self, serial, secret):
+	def handle_authenticator(self, serial: str, secret: str) -> int:
 		serial = bna.normalize_serial(serial)
 		secret = base64.b32decode(secret)
 
