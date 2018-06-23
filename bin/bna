@@ -18,7 +18,7 @@ def ishex(s: str) -> bool:
 	return "".join(filter(lambda c: c in hexdigits, s)) == s
 
 
-class Authenticator(object):
+class Authenticator:
 	def __init__(self, args):
 		arguments = ArgumentParser(prog="bna")
 		arguments.add_argument("serial", nargs="?")
@@ -145,7 +145,7 @@ class Authenticator(object):
 		self.add_serial(serial, secret)
 		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
 
-		return serial, secret
+		return serial, base64.b32encode(secret)
 
 	def list_serials(self):
 		default = self.get_default_serial()
