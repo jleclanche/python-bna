@@ -98,9 +98,9 @@ class Authenticator(object):
 
 		self.config = ConfigParser()
 		try:
-			self.config.read([self.configFile()])
+			self.config.read([self.config_file()])
 		except Exception as e:
-			self.error("Could not parse config file %r: %s" % (self.configFile(), e))
+			self.error("Could not parse config file %r: %s" % (self.config_file(), e))
 
 	def _serials(self):
 		return [x for x in self.config.sections() if x != "bna"]
@@ -130,7 +130,7 @@ class Authenticator(object):
 		if serial == self.get_default_serial():
 			self.config.remove_option("bna", "default_serial")
 
-		self.writeConfig()
+		self.write_config()
 		self.print("Successfully deleted serial %s" % (bna.prettify_serial(serial)))
 
 	def restore_serial(self, serial, code):
@@ -185,14 +185,14 @@ class Authenticator(object):
 			sys.stdout.flush()
 			sleep(1)
 
-	def configFile(self):
+	def config_file(self):
 		"""
 		Gets the path to the config file
 		"""
 		if self.args.config:
 			return os.path.expanduser(self.args.config)
 
-		def configDir():
+		def config_dir():
 			configdir = "bna"
 			home = os.environ.get("HOME")
 			if os.name == "posix":
@@ -208,7 +208,7 @@ class Authenticator(object):
 				os.makedirs(path)
 			return path
 
-		return os.path.join(configDir(), "bna.conf")
+		return os.path.join(config_dir(), "bna.conf")
 
 	def get_default_serial(self):
 		if not self.config.has_option("bna", "default_serial"):
@@ -219,14 +219,14 @@ class Authenticator(object):
 		if not self.config.has_section("bna"):
 			self.config.add_section("bna")
 		self.config.set("bna", "default_serial", serial)
-		self.writeConfig()
+		self.write_config()
 
-	def writeConfig(self):
+	def write_config(self):
 		try:
-			with open(self.configFile(), "w") as f:
+			with open(self.config_file(), "w") as f:
 				self.config.write(f)
 		except IOError as e:
-			self.error("Could not open %r for writing: %s" % (self.configFile(), e))
+			self.error("Could not open %r for writing: %s" % (self.config_file(), e))
 
 	def get_secret(self, serial):
 		if not self.config.has_section(serial):
@@ -252,7 +252,7 @@ class Authenticator(object):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
 
-		self.writeConfig()
+		self.write_config()
 
 	def run(self):
 		# Are we requesting a new authenticator?
