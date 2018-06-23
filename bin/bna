@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 
+import base64
 import os
 import sys
 from argparse import ArgumentParser
-from binascii import hexlify, unhexlify
+from binascii import unhexlify
 from configparser import ConfigParser
+from string import hexdigits
 
 import bna
+
+
+def ishex(s: str) -> bool:
+	"""
+	Returns True if a string contains only hex digits, False otherwise.
+	"""
+	return "".join(filter(lambda c: c in hexdigits, s)) == s
 
 
 class Authenticator(object):
@@ -133,7 +142,7 @@ class Authenticator(object):
 			)
 
 		secret = bna.restore(serial, code)
-		self.add_serial(serial, hexlify(secret).decode("ascii"))
+		self.add_serial(serial, secret)
 		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
 
 		return serial, secret
@@ -157,9 +166,8 @@ class Authenticator(object):
 			self.error("Could not connect: %s" % (e))
 
 		serial = bna.normalize_serial(serial)
-		_secret = hexlify(secret).decode("ascii")
-
-		self.add_serial(serial, _secret)
+		self.add_serial(serial, secret)
+		secret = base64.b32encode(secret)
 
 		self.print("Success. Your new serial is: %s" % (bna.prettify_serial(serial)))
 
@@ -222,12 +230,24 @@ class Authenticator(object):
 
 	def get_secret(self, serial):
 		if not self.config.has_section(serial):
-			return None
+			return ""
 
 		secret = self.config.get(serial, "secret")
-		return bytearray(secret, "ascii")
+
+		if len(secret) == 40 and ishex(secret):
+			# bna <= 4.0.0 saved secrets as hex instead of more standard base32
+			sys.stderr.write("Found old format for secret store. Converting.\n")
+			# decode old format
+			secret = unhexlify(secret)
+			# save to config (in base32)
+			self.set_secret(serial, secret)
+			# re-encode in new format
+			secret = base64.b32encode(secret)
+
+		return secret
 
 	def set_secret(self, serial, secret):
+		secret = base64.b32encode(unhexlify(secret))
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
@@ -273,15 +293,15 @@ class Authenticator(object):
 			serial = self.args.serial
 
 		# Get the secret from the keyring
-		self._secret = self.get_secret(serial)
-		if not self._secret:
-			self.error("No such serial: %r" % (serial))
-		self._secret = unhexlify(self._secret)
+		secret = self.get_secret(serial)
+		if not secret:
+			self.error("No such authenticator: %r" % (serial))
 
-		return self.handle_authenticator(serial, self._secret)
+		return self.handle_authenticator(serial, secret)
 
 	def handle_authenticator(self, serial, secret):
 		serial = bna.normalize_serial(serial)
+		secret = base64.b32decode(secret)
 
 		# Are we setting a serial as default?
 		if self.args.setdefault:
