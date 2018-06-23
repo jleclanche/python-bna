@@ -5,6 +5,7 @@ import sys
 from argparse import ArgumentParser
 from binascii import hexlify, unhexlify
 from configparser import ConfigParser
+
 import bna
 
 
@@ -273,8 +274,6 @@ class Authenticator(object):
 
 		# Get the secret from the keyring
 		self._secret = self.get_secret(serial)
-		if sys.version_info < (2, 7):
-			self._secret = self._secret.decode("utf-8")
 		if not self._secret:
 			self.error("No such serial: %r" % (serial))
 		self._secret = unhexlify(self._secret)
