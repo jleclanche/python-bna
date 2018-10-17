@@ -2,11 +2,12 @@ import hmac
 import struct
 from hashlib import sha1
 from http.client import HTTPConnection
+from secrets import token_bytes
 from time import time
 from typing import Optional, Tuple
 
 from .constants import ENROLL_HOSTS, PATHS
-from .crypto import decrypt, encrypt, get_one_time_pad, restore_code_to_bytes
+from .crypto import decrypt, encrypt, restore_code_to_bytes
 from .utils import normalize_serial
 
 
@@ -53,7 +54,7 @@ def request_new_serial(
 		ret += (model.encode() + b"\0" * 16)[:16]
 		return b"\1" + ret
 
-	otp = get_one_time_pad(37)
+	otp = token_bytes(37)
 	data = base_msg(otp, region, model)
 
 	e = encrypt(data)
@@ -104,7 +105,7 @@ def restore(serial: str, restore_code: str) -> bytes:
 	code = restore_code_to_bytes(restore_code)
 	hash = hmac.new(code, serial.encode() + challenge, digestmod=sha1).digest()
 
-	otp = get_one_time_pad(20)
+	otp = token_bytes(20)
 	e = encrypt(hash + otp)
 	response = validate_paper_restore(serial + e)
 	secret = decrypt(response, otp)

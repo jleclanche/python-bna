@@ -1,17 +1,8 @@
 from binascii import hexlify
 from hashlib import sha1
-from time import time
 from typing import Union
 
 from .constants import RSA_KEY, RSA_MOD
-
-
-def timedigest() -> bytes:
-	return sha1(str(time()).encode()).digest()
-
-
-def get_one_time_pad(length: int) -> bytes:
-	return (timedigest() + timedigest())[:length]
 
 
 def encrypt(data: bytes) -> str:
