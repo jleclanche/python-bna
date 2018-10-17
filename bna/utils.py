@@ -33,15 +33,12 @@ def prettify_serial(serial: str) -> str:
 		serial[0:2].upper(),
 		digits(serial[2:6]),
 		digits(serial[6:10]),
-		digits(serial[10:14])
+		digits(serial[10:14]),
 	)
 
 
 def get_otpauth_url(
-	serial: str,
-	secret: Union[bytes, str],
-	issuer: str="Battle.net",
-	digits: int=8
+	serial: str, secret: Union[bytes, str], issuer: str = "Battle.net", digits: int = 8
 ) -> str:
 	"""
 	Get the OTPAuth URL for the serial/secret pair

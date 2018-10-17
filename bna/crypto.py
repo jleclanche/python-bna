@@ -18,9 +18,9 @@ def get_one_time_pad(length: int) -> bytes:
 
 def get_token(
 	secret: bytes,
-	digits: int=8,
-	seconds: int=30,
-	time: Union[int, Callable[[], Union[int, float]]]=time
+	digits: int = 8,
+	seconds: int = 30,
+	time: Union[int, Callable[[], Union[int, float]]] = time,
 ):
 	"""
 	Computes the token for a given secret
@@ -78,7 +78,7 @@ def bytes_to_restore_code(digest: Union[bytes, bytearray]) -> str:
 
 
 def get_restore_code(serial: str, secret: bytes) -> str:
-	data = (serial.encode() + secret)
+	data = serial.encode() + secret
 	digest = sha1(data).digest()[-10:]
 	return bytes_to_restore_code(digest)
 

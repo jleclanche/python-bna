@@ -7,7 +7,7 @@ ENROLL_HOSTS = {
 	# "US": "m.us.mobileservice.blizzard.com",
 	# "EU": "eu.mobile-service.blizzard.com",
 	# "US": "us.mobile-service.blizzard.com",
-	"default": "mobile-service.blizzard.com",
+	"default": "mobile-service.blizzard.com"
 }
 
 PATHS = {

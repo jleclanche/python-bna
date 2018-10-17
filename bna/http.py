@@ -34,21 +34,19 @@ def get_server_response(data: Optional[str], host: str, path: str) -> bytes:
 
 
 def enroll(
-	data: str,
-	host: str=ENROLL_HOSTS["default"],
-	path: str=PATHS["enroll"]
+	data: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["enroll"]
 ) -> bytes:
 	return get_server_response(data, host, path)
 
 
 def request_new_serial(
-	region: str="US",
-	model: str="Motorola RAZR v3"
+	region: str = "US", model: str = "Motorola RAZR v3"
 ) -> Tuple[str, bytes]:
 	"""
 	Requests a new authenticator
 	This will connect to the Blizzard servers
 	"""
+
 	def base_msg(otp, region, model):
 		ret = (otp + b"\0" * 37)[:37]
 		ret += region.encode() or b"\0\0"
@@ -73,7 +71,7 @@ def request_new_serial(
 	return serial, secret
 
 
-def get_time_offset(region: str="US", path: str=PATHS["time"]) -> int:
+def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 	"""
 	Calculates the time difference in seconds as a float
 	between the local host and a remote server
@@ -114,17 +112,13 @@ def restore(serial: str, restore_code: str) -> bytes:
 
 
 def initiate_paper_restore(
-	serial: str,
-	host: str=ENROLL_HOSTS["default"],
-	path: str=PATHS["init_restore"]
+	serial: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["init_restore"]
 ) -> bytes:
 	return get_server_response(serial, host, path)
 
 
 def validate_paper_restore(
-	data: str,
-	host: str=ENROLL_HOSTS["default"],
-	path: str=PATHS["validate_restore"]
+	data: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["validate_restore"]
 ) -> bytes:
 	try:
 		response = get_server_response(data, host, path)

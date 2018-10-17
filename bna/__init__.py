@@ -15,8 +15,14 @@ from .utils import get_otpauth_url, normalize_serial, prettify_serial
 
 
 __all__ = [
-	"get_restore_code", "get_token",
-	"get_time_offset", "HTTPError", "request_new_serial", "restore",
-	"get_otpauth_url", "normalize_serial", "prettify_serial",
+	"get_restore_code",
+	"get_token",
+	"get_time_offset",
+	"HTTPError",
+	"request_new_serial",
+	"restore",
+	"get_otpauth_url",
+	"normalize_serial",
+	"prettify_serial",
 ]
 __version__ = pkg_resources.require("bna")[0].version

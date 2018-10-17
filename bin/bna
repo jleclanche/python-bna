@@ -24,46 +24,45 @@ class Authenticator:
 		arguments = ArgumentParser(prog="bna")
 		arguments.add_argument("serial", nargs="?")
 		arguments.add_argument(
-			"-n", "--new",
-			action="store_true",
-			dest="new",
-			help="request a new authenticator"
+			"-n", "--new", action="store_true", dest="new", help="request a new authenticator"
 		)
 		arguments.add_argument(
-			"--config",
-			type=str,
-			dest="config",
-			help="specify config file to use"
+			"--config", type=str, dest="config", help="specify config file to use"
 		)
 		arguments.add_argument(
-			"-d", "--delete",
+			"-d",
+			"--delete",
 			action="store_true",
 			dest="delete",
-			help="delete a stored serial and its matching secret"
+			help="delete a stored serial and its matching secret",
 		)
 		arguments.add_argument(
-			"-i", "--interactive",
+			"-i",
+			"--interactive",
 			action="store_true",
 			dest="update",
-			help="interactive mode: updates the token as soon as it expires"
+			help="interactive mode: updates the token as soon as it expires",
 		)
 		arguments.add_argument(
-			"-l", "--list",
+			"-l",
+			"--list",
 			action="store_true",
 			dest="list",
-			help="list all your active serials and exit"
+			help="list all your active serials and exit",
 		)
 		arguments.add_argument(
-			"-r", "--region",
+			"-r",
+			"--region",
 			type=str,
 			dest="region",
 			default="US",
-			help="desired region for new authenticators"
+			help="desired region for new authenticators",
 		)
 		arguments.add_argument(
-			"--remaining", action="store_true",
+			"--remaining",
+			action="store_true",
 			dest="remaining",
-			help="also print the remaining time until the token expires"
+			help="also print the remaining time until the token expires",
 		)
 		arguments.add_argument(
 			"--restore",
@@ -71,29 +70,27 @@ class Authenticator:
 			type=str,
 			dest="restore",
 			metavar=("SERIAL", "CODE"),
-			help="restores an existing authenticator"
+			help="restores an existing authenticator",
 		)
 		arguments.add_argument(
 			"--restore-code",
 			action="store_true",
 			dest="restorecode",
-			help="prints a serial's restore code and exit"
+			help="prints a serial's restore code and exit",
 		)
 		arguments.add_argument(
 			"--otpauth-url",
 			action="store_true",
-			help="Print standard otpauth URL for use with OTP apps"
+			help="Print standard otpauth URL for use with OTP apps",
 		)
 		arguments.add_argument(
 			"--set-default",
 			action="store_true",
 			dest="setdefault",
-			help="set authenticator as default (also works when requesting a new authenticator)"
+			help="set authenticator as default (also works when requesting a new authenticator)",
 		)
 		arguments.add_argument(
-			"-v", "--version",
-			action="version",
-			version="bna %s" % (bna.__version__)
+			"-v", "--version", action="version", version="bna %s" % (bna.__version__)
 		)
 		self.args = arguments.parse_args(args)
 
@@ -176,6 +173,7 @@ class Authenticator:
 
 	def run_live(self, serial, secret) -> None:
 		from time import sleep
+
 		self.print("Ctrl-C to exit")
 		while 1:
 			token, time_remaining = bna.get_token(secret=secret)
@@ -334,6 +332,7 @@ class Authenticator:
 
 def main():
 	import signal
+
 	signal.signal(signal.SIGINT, signal.SIG_DFL)
 	authenticator = Authenticator(sys.argv[1:])
 	return authenticator.run()
