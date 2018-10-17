@@ -49,7 +49,7 @@ OTP from Mobile
 ::
 
 	$ bna --otpauth-url
-	otpauth://totp/Battle.net:EU123412341234:?secret=ASFAS75ASDF75889G9AD7S69AS7697AS&issuer=Battle.net&digits=8
+	otpauth://totp/Blizzard:EU123412341234:?secret=ASFAS75ASDF75889G9AD7S69AS7697AS&issuer=Blizzard&digits=8
 
 
 Now paste this to your OTP app, or convert to QRCode and scan, or manually enter the secret.

@@ -42,4 +42,4 @@ def get_otpauth_url(serial: str, secret: str) -> str:
 	"""
 	totp = TOTP(secret, digits=8)
 
-	return totp.provisioning_uri(serial, issuer_name="Battle.net")
+	return totp.provisioning_uri(serial, issuer_name="Blizzard")

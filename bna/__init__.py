@@ -1,6 +1,6 @@
 """
 python-bna
-Battle.net Authenticator routines in Python.
+Blizzard Authenticator routines in Python.
 
 Specification can be found here:
 * <http://bnetauth.freeportal.us/specification.html>

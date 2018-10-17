@@ -33,8 +33,8 @@ def test_otpauth_url():
 	p = urllib.parse.urlparse(otpauth_url)
 	assert p.scheme == "otpauth"
 	assert p.netloc == "totp"
-	assert p.path == "/Battle.net:%s" % (SERIAL)
+	assert p.path == "/Blizzard:%s" % (SERIAL)
 	params = urllib.parse.parse_qs(p.query)
 	assert params["secret"] == [SECRET]
-	assert params["issuer"] == ["Battle.net"]
+	assert params["issuer"] == ["Blizzard"]
 	assert params["digits"] == ["8"]
