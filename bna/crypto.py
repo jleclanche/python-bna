@@ -1,9 +1,7 @@
-import hmac
-import struct
 from binascii import hexlify
 from hashlib import sha1
 from time import time
-from typing import Callable, Union
+from typing import Union
 
 from .constants import RSA_KEY, RSA_MOD
 
@@ -14,29 +12,6 @@ def timedigest() -> bytes:
 
 def get_one_time_pad(length: int) -> bytes:
 	return (timedigest() + timedigest())[:length]
-
-
-def get_token(
-	secret: bytes,
-	digits: int = 8,
-	seconds: int = 30,
-	time: Union[int, Callable[[], Union[int, float]]] = time,
-):
-	"""
-	Computes the token for a given secret
-	Returns the token, and the seconds remaining
-	for that token
-	"""
-	if callable(time):
-		time = int(time())
-	else:
-		time = int(time)
-	msg = struct.pack(">Q", int(time / seconds))
-	r = hmac.new(secret, msg, sha1).digest()
-	k = r[19]
-	idx = k & 0x0f
-	h = struct.unpack(">L", r[idx:idx + 4])[0] & 0x7fffffff
-	return h % (10 ** digits), -(time % seconds - seconds)
 
 
 def encrypt(data: bytes) -> str:
