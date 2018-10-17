@@ -10,6 +10,7 @@ from string import hexdigits
 from typing import List, Tuple
 
 import bna
+from pyotp import TOTP
 
 
 def ishex(s: str) -> bool:
@@ -165,12 +166,12 @@ class Authenticator:
 
 		return serial, secret
 
-	def run_live(self, serial, secret) -> None:
+	def run_live(self, totp: TOTP) -> None:
 		from time import sleep
 
 		self.print("Ctrl-C to exit")
 		while True:
-			token, time_remaining = bna.get_token(secret=secret)
+			token = totp.now()
 			sys.stdout.write("\r%08i" % (token))
 			sys.stdout.flush()
 			sleep(1)
@@ -291,7 +292,7 @@ class Authenticator:
 
 	def handle_authenticator(self, serial: str, secret: str) -> int:
 		serial = bna.normalize_serial(serial)
-		secret = base64.b32decode(secret)
+		secret_bytes = base64.b32decode(secret)
 
 		# Are we setting a serial as default?
 		if self.args.setdefault:
@@ -299,21 +300,21 @@ class Authenticator:
 
 		# Print the restore code if the user asked for it
 		if self.args.restorecode:
-			code = bna.get_restore_code(serial, secret)
+			code = bna.get_restore_code(serial, secret_bytes)
 			self.print(code)
 			return 0
 
 		if self.args.otpauth_url:
-			url = bna.get_otpauth_url(serial, secret)
+			url = bna.get_otpauth_url(serial, secret_bytes)
 			self.print(url)
 			return 0
 
 		# otherwise print the token
+		totp = TOTP(secret, digits=8)
 		if self.args.update:
-			self.run_live(serial, secret)
+			self.run_live(totp)
 		else:
-			token, time_remaining = bna.get_token(secret=secret)
-			self.print("%08i" % (token))
+			self.print(totp.now())
 
 		return 0
 
