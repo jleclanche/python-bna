@@ -54,7 +54,7 @@ OTP from Mobile
 
 Now paste this to your OTP app, or convert to QRCode and scan, or manually enter the secret.
 
-Note: This will not work with "Google Authenticator" as it does not support 8 digits, try "FreeOTP_"
+This is compatible with standard TOTP clients and password managers such as andOTP_ (Android), KeepassXC_ (Cross-platform) or 1Password_ (Cross-platform).
 
 QRCode
 ~~~~~~
@@ -104,4 +104,6 @@ Getting a token
 		sleep(time_remaining)
 
 
-.. _FreeOTP: https://fedorahosted.org/freeotp/
+.. _andOTP: https://play.google.com/store/apps/details?id=org.shadowice.flocke.andotp
+.. _KeepassXC: https://keepassxc.org/
+.. _1Password: https://1password.com/
