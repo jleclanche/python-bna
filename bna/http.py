@@ -77,9 +77,6 @@ def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 	Calculates the time difference in seconds as a float
 	between the local host and a remote server
 
-	NOTE: The server returns time in milliseconds as an int while
-	Python returns it as a float, in seconds.
-
 	This function returns the difference in milliseconds as an int.
 	Negative numbers indicate the local clock is ahead of the
 	server clock.
@@ -87,9 +84,12 @@ def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
 	response = get_server_response(None, host, path)
 	t = time()
-	remoteTime = int(struct.unpack(">Q", response)[0])
 
-	return remoteTime - int(t * 1000)
+	# NOTE: The server returns time in milliseconds as an int whereas
+	# Python returns it as a float, in seconds.
+	server_time = int(struct.unpack(">Q", response)[0])
+
+	return server_time - int(t * 1000)
 
 
 def restore(serial: str, restore_code: str) -> bytes:
