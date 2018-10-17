@@ -92,16 +92,10 @@ Getting a token
 ---------------
 ::
 
-	# Get and print a token
-	token, time_remaining = bna.get_token(secret=secret)
-	print(token)
-
-	# print a new token every time the previous one expires
-	from time import sleep
-	while True:
-		token, time_remaining = bna.get_token(secret=secret)
-		print(token)
-		sleep(time_remaining)
+	# Get and print a token using PyOTP
+	from pyotp import TOTP
+	totp = TOTP(secret, digits=8)
+	print(totp.now())
 
 
 .. _andOTP: https://play.google.com/store/apps/details?id=org.shadowice.flocke.andotp
