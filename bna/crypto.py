@@ -1,3 +1,4 @@
+from base64 import b32decode
 from hashlib import sha1
 from typing import Union
 
@@ -42,8 +43,9 @@ def bytes_to_restore_code(digest: Union[bytes, bytearray]) -> str:
 	return "".join(ret)
 
 
-def get_restore_code(serial: str, secret: bytes) -> str:
-	data = serial.encode() + secret
+def get_restore_code(serial: str, secret: str) -> str:
+	secret_bytes = b32decode(secret)
+	data = serial.encode() + secret_bytes
 	digest = sha1(data).digest()[-10:]
 	return bytes_to_restore_code(digest)
 

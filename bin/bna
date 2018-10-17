@@ -8,8 +8,9 @@ from configparser import ConfigParser
 from string import hexdigits
 from typing import List, Tuple
 
-import bna
 from pyotp import TOTP
+
+import bna
 
 
 def ishex(s: str) -> bool:
@@ -104,7 +105,7 @@ class Authenticator:
 	def print(self, msg: str) -> None:
 		print(msg)
 
-	def add_serial(self, serial: str, secret: bytes) -> None:
+	def add_serial(self, serial: str, secret: str) -> None:
 		self.set_secret(serial, secret)
 
 		# We set the serial as default if we don't have one set already
@@ -137,7 +138,7 @@ class Authenticator:
 		self.add_serial(serial, secret)
 		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
 
-		return serial, base64.b32encode(secret)
+		return serial, secret
 
 	def list_serials(self) -> None:
 		default = self.get_default_serial()
@@ -159,7 +160,6 @@ class Authenticator:
 
 		serial = bna.normalize_serial(serial)
 		self.add_serial(serial, secret)
-		secret = base64.b32encode(secret)
 
 		self.print("Success. Your new serial is: %s" % (bna.prettify_serial(serial)))
 
@@ -229,15 +229,14 @@ class Authenticator:
 			sys.stderr.write("Found old format for secret store. Converting.\n")
 			# decode old format
 			secret = bytes.fromhex(secret)
-			# save to config (in base32)
-			self.set_secret(serial, secret)
 			# re-encode in new format
 			secret = base64.b32encode(secret)
+			# save to config (in base32)
+			self.set_secret(serial, secret)
 
 		return secret
 
-	def set_secret(self, serial: str, secret: bytes) -> None:
-		secret = base64.b32encode(secret).decode()
+	def set_secret(self, serial: str, secret: str) -> None:
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
@@ -291,7 +290,6 @@ class Authenticator:
 
 	def handle_authenticator(self, serial: str, secret: str) -> int:
 		serial = bna.normalize_serial(serial)
-		secret_bytes = base64.b32decode(secret)
 
 		# Are we setting a serial as default?
 		if self.args.setdefault:
@@ -299,12 +297,12 @@ class Authenticator:
 
 		# Print the restore code if the user asked for it
 		if self.args.restorecode:
-			code = bna.get_restore_code(serial, secret_bytes)
+			code = bna.get_restore_code(serial, secret)
 			self.print(code)
 			return 0
 
 		if self.args.otpauth_url:
-			url = bna.get_otpauth_url(serial, secret_bytes)
+			url = bna.get_otpauth_url(serial, secret)
 			self.print(url)
 			return 0
 

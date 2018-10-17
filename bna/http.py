@@ -1,5 +1,6 @@
 import hmac
 import struct
+from base64 import b32encode
 from hashlib import sha1
 from http.client import HTTPConnection
 from secrets import token_bytes
@@ -42,7 +43,7 @@ def enroll(
 
 def request_new_serial(
 	region: str = "US", model: str = "Motorola RAZR v3"
-) -> Tuple[str, bytes]:
+) -> Tuple[str, str]:
 	"""
 	Requests a new authenticator
 	This will connect to the Blizzard servers
@@ -62,7 +63,7 @@ def request_new_serial(
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
 	response = decrypt(enroll(e, host)[8:], otp)
 
-	secret = bytes(response[:20])
+	secret = b32encode(response[:20]).decode()
 	serial = response[20:].decode()
 
 	region = serial[:2]
@@ -92,7 +93,7 @@ def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 	return server_time - int(t * 1000)
 
 
-def restore(serial: str, restore_code: str) -> bytes:
+def restore(serial: str, restore_code: str) -> str:
 	restore_code = restore_code.upper()
 	serial = normalize_serial(serial)
 	if len(restore_code) != 10:
@@ -110,7 +111,7 @@ def restore(serial: str, restore_code: str) -> bytes:
 	response = validate_paper_restore(serial + e)
 	secret = decrypt(response, otp)
 
-	return secret
+	return b32encode(secret).decode()
 
 
 def initiate_paper_restore(
