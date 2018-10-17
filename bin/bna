@@ -59,12 +59,6 @@ class Authenticator:
 			help="desired region for new authenticators",
 		)
 		arguments.add_argument(
-			"--remaining",
-			action="store_true",
-			dest="remaining",
-			help="also print the remaining time until the token expires",
-		)
-		arguments.add_argument(
 			"--restore",
 			nargs=2,
 			type=str,
@@ -175,12 +169,9 @@ class Authenticator:
 		from time import sleep
 
 		self.print("Ctrl-C to exit")
-		while 1:
+		while True:
 			token, time_remaining = bna.get_token(secret=secret)
-			if self.args.remaining:
-				sys.stdout.write("\r%08i (%02is remaining)" % (token, time_remaining))
-			else:
-				sys.stdout.write("\r%08i" % (token))
+			sys.stdout.write("\r%08i" % (token))
 			sys.stdout.flush()
 			sleep(1)
 
@@ -322,10 +313,7 @@ class Authenticator:
 			self.run_live(serial, secret)
 		else:
 			token, time_remaining = bna.get_token(secret=secret)
-			if self.args.remaining:
-				self.print("%08i (%02is remaining)" % (token, time_remaining))
-			else:
-				self.print("%08i" % (token))
+			self.print("%08i" % (token))
 
 		return 0
 
