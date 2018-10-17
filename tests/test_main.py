@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 import urllib.parse
+from base64 import b32encode
+
+from pyotp import TOTP
 
 import bna
 
@@ -11,11 +14,17 @@ SECRET_ENC = "HA4GCYLGMFRWKNBYGI4TCZJQHFSGGMLFMNSTSYZSMFQTINDEHAZTSOJYGNQTOZTG"
 
 
 def test_token():
-	assert bna.get_token(SECRET, time=1347279358) == (93461643, 2)
-	assert bna.get_token(SECRET, time=1347279359) == (93461643, 1)
-	assert bna.get_token(SECRET, time=1347279360) == (86031001, 30)
+	totp = TOTP(b32encode(SECRET), digits=8)
+	assert totp.at(1347279358) == "93461643"
+	assert totp.at(1347279359) == "93461643"
+	assert totp.at(1347279360) == "86031001"
+
+
+def test_restore_code():
 	assert bna.get_restore_code(SERIAL, SECRET) == "4B91NQCYQ3"
 
+
+def test_serial():
 	pretty_serial = bna.prettify_serial(SERIAL)
 	assert pretty_serial == "US-1209-1071-1868"
 	assert bna.normalize_serial(pretty_serial) == SERIAL
