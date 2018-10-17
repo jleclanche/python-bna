@@ -1,4 +1,3 @@
-from binascii import hexlify
 from hashlib import sha1
 from typing import Union
 
@@ -6,7 +5,7 @@ from .constants import RSA_KEY, RSA_MOD
 
 
 def encrypt(data: bytes) -> str:
-	base_num = int(hexlify(data), 16)
+	base_num = int(data.hex(), 16)
 	n = base_num ** RSA_KEY % RSA_MOD
 	ret = ""
 	while n > 0:
