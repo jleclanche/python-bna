@@ -31,7 +31,7 @@ def test_serial():
 
 
 def test_otpauth_url():
-	otpauth_url = bna.get_otpauth_url(SERIAL, SECRET)
+	otpauth_url = bna.get_otpauth_url(SERIAL, SECRET_ENC)
 	p = urllib.parse.urlparse(otpauth_url)
 	assert p.scheme == "otpauth"
 	assert p.netloc == "totp"

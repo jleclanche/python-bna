@@ -3,7 +3,8 @@ Utility functions
 """
 from base64 import b32encode
 from typing import Union
-from urllib.parse import urlencode, urlunparse
+
+from pyotp import TOTP
 
 
 def normalize_serial(serial: str) -> str:
@@ -37,17 +38,14 @@ def prettify_serial(serial: str) -> str:
 	)
 
 
-def get_otpauth_url(
-	serial: str, secret: Union[bytes, str], issuer: str = "Battle.net", digits: int = 8
-) -> str:
+def get_otpauth_url(serial: str, secret: Union[bytes, str]) -> str:
 	"""
 	Get the OTPAuth URL for the serial/secret pair
 	https://github.com/google/google-authenticator/wiki/Key-Uri-Format
 	"""
 	if not isinstance(secret, str):
 		secret = b32encode(secret)
-	protocol = "otpauth"
-	type = "totp"
-	label = "%s:%s" % (issuer, serial)
-	params = {"secret": secret, "issuer": issuer, "digits": 8}
-	return urlunparse((protocol, type, label, "", urlencode(params), ""))
+
+	totp = TOTP(secret, digits=8)
+
+	return totp.provisioning_uri(serial, issuer_name="Battle.net")
