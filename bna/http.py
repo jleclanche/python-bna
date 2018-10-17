@@ -92,6 +92,7 @@ def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 
 
 def restore(serial: str, restore_code: str) -> bytes:
+	restore_code = restore_code.upper()
 	serial = normalize_serial(serial)
 	if len(restore_code) != 10:
 		raise ValueError("invalid restore code (should be 10 bytes): %r" % (restore_code))
