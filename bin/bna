@@ -6,11 +6,31 @@ import sys
 from argparse import ArgumentParser
 from configparser import ConfigParser
 from string import hexdigits
+from time import sleep
 from typing import List, Tuple
 
+import click
 from pyotp import TOTP
 
 import bna
+
+
+def get_default_config_path() -> str:
+	"""
+	Returns the default configuration file path
+	"""
+	configdir = "bna"
+	home = os.environ.get("HOME")
+	if os.name == "posix":
+		base = os.environ.get("XDG_CONFIG_HOME", os.path.join(home, ".config"))
+		path = os.path.join(base, configdir)
+	elif os.name == "nt":
+		base = os.environ["APPDATA"]
+		path = os.path.join(base, configdir)
+	else:
+		path = home
+
+	return os.path.join(path, "bna.conf")
 
 
 def ishex(s: str) -> bool:
@@ -20,185 +40,58 @@ def ishex(s: str) -> bool:
 	return "".join(filter(lambda c: c in hexdigits, s)) == s
 
 
-class Authenticator:
-	def __init__(self, args):
-		arguments = ArgumentParser(prog="bna")
-		arguments.add_argument("serial", nargs="?")
-		arguments.add_argument(
-			"-n", "--new", action="store_true", dest="new", help="request a new authenticator"
-		)
-		arguments.add_argument(
-			"--config", type=str, dest="config", help="specify config file to use"
-		)
-		arguments.add_argument(
-			"-d",
-			"--delete",
-			action="store_true",
-			dest="delete",
-			help="delete a stored serial and its matching secret",
-		)
-		arguments.add_argument(
-			"-i",
-			"--interactive",
-			action="store_true",
-			dest="update",
-			help="interactive mode: updates the token as soon as it expires",
-		)
-		arguments.add_argument(
-			"-l",
-			"--list",
-			action="store_true",
-			dest="list",
-			help="list all your active serials and exit",
-		)
-		arguments.add_argument(
-			"-r",
-			"--region",
-			type=str,
-			dest="region",
-			default="US",
-			help="desired region for new authenticators",
-		)
-		arguments.add_argument(
-			"--restore",
-			nargs=2,
-			type=str,
-			dest="restore",
-			metavar=("SERIAL", "CODE"),
-			help="restores an existing authenticator",
-		)
-		arguments.add_argument(
-			"--restore-code",
-			action="store_true",
-			dest="restorecode",
-			help="prints a serial's restore code and exit",
-		)
-		arguments.add_argument(
-			"--otpauth-url",
-			action="store_true",
-			help="Print standard otpauth URL for use with OTP apps",
-		)
-		arguments.add_argument(
-			"--set-default",
-			action="store_true",
-			dest="setdefault",
-			help="set authenticator as default (also works when requesting a new authenticator)",
-		)
-		arguments.add_argument(
-			"-v", "--version", action="version", version="bna %s" % (bna.__version__)
-		)
-		self.args = arguments.parse_args(args)
+class AuthenticatorSerial(click.ParamType):
+	name = "serial"
+
+	def convert(self, value: str, param, ctx) -> str:
+		if not value:
+			value = ctx.obj.get_default_serial()
+			if not value:
+				if not ctx.obj._serials():
+					msg = (
+						"You do not have any configured authenticators. "
+						"Create a new one with 'bna new' or try "
+						"'bna --help' for more information"
+					)
+				else:
+					msg = (
+						"You do not have a default authenticator set. "
+						"You must provide an authenticator serial or set a "
+						"default one with 'bna set-default <serial>'."
+					)
+				ctx.fail(msg)
+
+		serial = bna.normalize_serial(value)
+		if not ctx.obj.config.has_section(serial):
+			ctx.fail(f"No such authenticator: {serial}")
+
+		return serial
+
+
+class App:
+	def __init__(self, config: str) -> None:
+		self.config_file = os.path.expanduser(config) or get_default_config_path()
+		config_dir = os.path.abspath(os.path.dirname(self.config_file))
+		if not os.path.exists(config_dir):
+			os.makedirs(config_dir)
 
 		self.config = ConfigParser()
 		try:
-			self.config.read([self.config_file()])
+			self.config.read([self.config_file])
 		except Exception as e:
-			self.error("Could not parse config file %r: %s" % (self.config_file(), e))
+			click.echo(f"Could not parse config file {self.config_file}: {e}", err=True)
+			click.exit(1)
 
 	def _serials(self) -> List[str]:
 		return [x for x in self.config.sections() if x != "bna"]
 
-	def error(self, msg: str) -> None:
-		sys.stderr.write("Error: %s\n" % (msg))
-		exit(1)
-
-	def print(self, msg: str) -> None:
-		print(msg)
-
-	def add_serial(self, serial: str, secret: str) -> None:
+	def add_serial(self, serial: str, secret: str, set_default: bool) -> None:
 		self.set_secret(serial, secret)
 
 		# We set the serial as default if we don't have one set already
 		# Otherwise, we check for --set-default
-		if self.args.setdefault or not self.get_default_serial():
+		if set_default or not self.get_default_serial():
 			self.set_default_serial(serial)
-
-	def delete_serial(self, serial) -> None:
-		serial = bna.normalize_serial(serial)
-		if not self.config.has_section(serial):
-			self.error("No such serial: %r" % (serial))
-		self.config.remove_section(serial)
-
-		# If it's the default serial, remove that
-		if serial == self.get_default_serial():
-			self.config.remove_option("bna", "default_serial")
-
-		self.write_config()
-		self.print("Successfully deleted serial %s" % (bna.prettify_serial(serial)))
-
-	def restore_serial(self, serial: str, code: str) -> Tuple[str, str]:
-		serial = bna.normalize_serial(serial)
-		if self.config.has_option(serial, "secret"):
-			self.error(
-				"A secret already exists for this serial. "
-				"Try deleting it first with bna --delete %s" % (serial)
-			)
-
-		secret = bna.restore(serial, code)
-		self.add_serial(serial, secret)
-		self.print("Restored serial %s" % (bna.prettify_serial(serial)))
-
-		return serial, secret
-
-	def list_serials(self) -> None:
-		default = self.get_default_serial()
-		total = 0
-		for serial in self._serials():
-			if serial == default:
-				self.print("%s (default)" % (serial))
-			else:
-				self.print(serial)
-			total += 1
-
-		self.print("%i items" % (total))
-
-	def query_new_authenticator(self) -> Tuple[str, str]:
-		try:
-			serial, secret = bna.request_new_serial(self.args.region)
-		except bna.HTTPError as e:
-			self.error("Could not connect: %s" % (e))
-
-		serial = bna.normalize_serial(serial)
-		self.add_serial(serial, secret)
-
-		self.print("Success. Your new serial is: %s" % (bna.prettify_serial(serial)))
-
-		return serial, secret
-
-	def run_live(self, totp: TOTP) -> None:
-		from time import sleep
-
-		self.print("Ctrl-C to exit")
-		while True:
-			token = totp.now()
-			sys.stdout.write("\r%08i" % (token))
-			sys.stdout.flush()
-			sleep(1)
-
-	def config_file(self):
-		"""
-		Gets the path to the config file
-		"""
-		if self.args.config:
-			return os.path.expanduser(self.args.config)
-
-		def config_dir():
-			configdir = "bna"
-			home = os.environ.get("HOME")
-			if os.name == "posix":
-				base = os.environ.get("XDG_CONFIG_HOME", os.path.join(home, ".config"))
-				path = os.path.join(base, configdir)
-			elif os.name == "nt":
-				base = os.environ["APPDATA"]
-				path = os.path.join(base, configdir)
-			else:
-				path = home
-
-			if not os.path.exists(path):
-				os.makedirs(path)
-			return path
-
-		return os.path.join(config_dir(), "bna.conf")
 
 	def get_default_serial(self) -> str:
 		if not self.config.has_option("bna", "default_serial"):
@@ -213,10 +106,11 @@ class Authenticator:
 
 	def write_config(self) -> None:
 		try:
-			with open(self.config_file(), "w") as f:
+			with open(self.config_file, "w") as f:
 				self.config.write(f)
 		except IOError as e:
-			self.error("Could not open %r for writing: %s" % (self.config_file(), e))
+			click.echo(f"Could not open {self.config_file} for writing: {e}", err=True)
+			exit(1)
 
 	def get_secret(self, serial: str) -> str:
 		if not self.config.has_section(serial):
@@ -228,9 +122,9 @@ class Authenticator:
 			# bna <= 4.0.0 saved secrets as hex instead of more standard base32
 			sys.stderr.write("Found old format for secret store. Converting.\n")
 			# decode old format
-			secret = bytes.fromhex(secret)
+			secret_bytes = bytes.fromhex(secret)
 			# re-encode in new format
-			secret = base64.b32encode(secret)
+			secret = base64.b32encode(secret_bytes).decode()
 			# save to config (in base32)
 			self.set_secret(serial, secret)
 
@@ -240,89 +134,148 @@ class Authenticator:
 		if not self.config.has_section(serial):
 			self.config.add_section(serial)
 		self.config.set(serial, "secret", secret)
-
 		self.write_config()
 
-	def run(self):
-		# Are we requesting a new authenticator?
-		if self.args.new:
-			serial, secret = self.query_new_authenticator()
-			return self.handle_authenticator(serial, secret)
 
-		if self.args.delete:
-			if not self.args.serial:
-				self.error("You must provide a serial with --delete")
-			self.delete_serial(self.args.serial)
-			return 0
+class DefaultShowGroup(click.Group):
+	def parse_args(self, ctx: click.Context, args: list):
+		if not args:
+			args.append("show")
+		return super().parse_args(ctx, args)
 
-		if self.args.list:
-			self.list_serials()
-			return 0
 
-		if self.args.restore:
-			serial, secret = self.restore_serial(*self.args.restore)
-			return self.handle_authenticator(serial, secret)
+@click.group(cls=DefaultShowGroup)
+@click.option("--config", default="", help="Path to a different config file to use")
+@click.version_option(bna.__version__)
+@click.pass_context
+def main(ctx: click.Context, config: str) -> None:
+	ctx.obj = App(config)
 
-		if not self.args.serial:
-			serial = self.get_default_serial()
-			if not serial:
-				if self._serials():
-					self.error(
-						"You do not have a default serial set. "
-						"Must provide an authenticator serial or set a default "
-						"one with 'bna --set-default'."
-					)
-				else:
-					self.error(
-						"You do not have any configured authenticators. "
-						"Create a new one with 'bna --new' or try "
-						"'bna --help' for more information"
-					)
+
+@main.command(help="Show the current authenticator code")
+@click.argument("serial", type=AuthenticatorSerial(), default="")
+@click.option(
+	"--interactive/--no-interactive",
+	default=False,
+	help="interactive mode: updates the token as soon as it expires",
+)
+@click.pass_context
+def show(ctx: click.Context, serial: str, interactive: bool) -> None:
+	secret = ctx.obj.get_secret(serial)
+	totp = TOTP(secret, digits=8)
+	if interactive:
+		click.echo("Ctrl-C to exit")
+		while True:
+			token = totp.now()
+			sys.stdout.write("\r" + totp.now())
+			sys.stdout.flush()
+			sleep(1)
+	else:
+		click.echo(totp.now())
+
+
+@main.command(help="Request a new authenticator")
+@click.option("--region", default="US", help="Desired region for the new authenticator")
+@click.option("--set-default/--no-set-default", default=True)
+@click.pass_context
+def new(ctx: click.Context, region: str, set_default: bool) -> None:
+	try:
+		serial, secret = bna.request_new_serial(region)
+	except bna.HTTPError as e:
+		click.echo(f"Could not connect: {e}", err=True)
+		exit(1)
+
+	serial = bna.normalize_serial(serial)
+	ctx.obj.add_serial(serial, secret, set_default=set_default)
+	click.echo(f"Success! Your new authenticator is: {bna.prettify_serial(serial)}")
+
+
+@main.command(help="Delete an authenticator from the configuration")
+@click.argument("serial", type=AuthenticatorSerial())
+@click.pass_context
+def delete(ctx: click.Context, serial: str) -> None:
+	if not ctx.obj.config.has_section(serial):
+		ctx.fail(f"No such serial: {serial}")
+	ctx.obj.config.remove_section(serial)
+
+	# If it's the default serial, remove that
+	if serial == ctx.obj.get_default_serial():
+		ctx.obj.config.remove_option("bna", "default_serial")
+
+	ctx.obj.write_config()
+	click.echo(f"Deleted authenticator: {bna.prettify_serial(serial)}")
+
+
+@main.command(help="Recover an authenticator from its restore code")
+@click.argument("serial")
+@click.argument("restore_code")
+@click.option("--set-default/--no-set-default", default=False)
+@click.pass_context
+def restore(
+	ctx: click.Context, serial: str, restore_code: str, set_default: bool
+) -> None:
+	if ctx.obj.config.has_option(serial, "secret"):
+		ctx.fail(
+			"A secret already exists for this serial. "
+			f"Try deleting it first with bna delete {serial}"
+		)
+
+	serial = bna.normalize_serial(serial)
+	try:
+		secret = bna.restore(serial, restore_code)
+	except ValueError as e:
+		ctx.fail(str(e))
+
+	ctx.obj.add_serial(serial, secret, set_default=set_default)
+	click.echo(f"Restored {bna.prettify_serial(serial)}")
+
+
+@main.command(help="List all configured authenticators")
+@click.pass_context
+def list(ctx) -> None:
+	default = ctx.obj.get_default_serial()
+	serials = ctx.obj._serials()
+	for serial in serials:
+		if serial == default:
+			click.echo(f"{serial} (default)")
 		else:
-			serial = self.args.serial
+			click.echo(serial)
 
-		# Get the secret from the keyring
-		secret = self.get_secret(serial)
-		if not secret:
-			self.error("No such authenticator: %r" % (serial))
-
-		return self.handle_authenticator(serial, secret)
-
-	def handle_authenticator(self, serial: str, secret: str) -> int:
-		serial = bna.normalize_serial(serial)
-
-		# Are we setting a serial as default?
-		if self.args.setdefault:
-			self.set_default_serial(serial)
-
-		# Print the restore code if the user asked for it
-		if self.args.restorecode:
-			code = bna.get_restore_code(serial, secret)
-			self.print(code)
-			return 0
-
-		if self.args.otpauth_url:
-			url = bna.get_otpauth_url(serial, secret)
-			self.print(url)
-			return 0
-
-		# otherwise print the token
-		totp = TOTP(secret, digits=8)
-		if self.args.update:
-			self.run_live(totp)
-		else:
-			self.print(totp.now())
-
-		return 0
+	click.echo(f"{len(serials)} authenticators")
 
 
-def main():
-	import signal
+@main.command(help="Set an authenticator as the default one to use for commands")
+@click.argument("serial", type=AuthenticatorSerial(), default="")
+@click.pass_context
+def set_default(ctx: click.Context, serial: str) -> None:
+	ctx.obj.set_default_serial(serial)
+	click.echo(f"{bna.prettify_serial(serial)} is now your default authenticator.")
 
-	signal.signal(signal.SIGINT, signal.SIG_DFL)
-	authenticator = Authenticator(sys.argv[1:])
-	return authenticator.run()
+
+@main.command("show-restore-code", help="Display an authenticator's restore code")
+@click.argument("serial", type=AuthenticatorSerial(), default="")
+@click.pass_context
+def show_restore_code(ctx: click.Context, serial: str) -> None:
+	secret = ctx.obj.get_secret(serial)
+	code = bna.get_restore_code(serial, secret)
+	click.echo(code)
+
+
+@main.command("show-url", help="Display an authenticator's OTPAuth URL (for QR codes)")
+@click.argument("serial", type=AuthenticatorSerial(), default="")
+@click.pass_context
+def show_url(ctx: click.Context, serial: str) -> None:
+	secret = ctx.obj.get_secret(serial)
+	click.echo(bna.get_otpauth_url(serial, secret))
+
+
+@main.command("show-secret", help="Display an authenticator's secret")
+@click.argument("serial", type=AuthenticatorSerial(), default="")
+@click.pass_context
+def show_secret(ctx: click.Context, serial: str) -> None:
+	secret = ctx.obj.get_secret(serial)
+	click.echo(secret)
 
 
 if __name__ == "__main__":
-	exit(main())
+	main()
