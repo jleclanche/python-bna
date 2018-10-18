@@ -97,7 +97,7 @@ def restore(serial: str, restore_code: str) -> str:
 	restore_code = restore_code.upper()
 	serial = normalize_serial(serial)
 	if len(restore_code) != 10:
-		raise ValueError("invalid restore code (should be 10 bytes): %r" % (restore_code))
+		raise ValueError(f"invalid restore code (should be 10 characters): {restore_code}")
 
 	challenge = initiate_paper_restore(serial)
 	if len(challenge) != 32:
