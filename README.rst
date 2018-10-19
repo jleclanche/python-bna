@@ -22,7 +22,7 @@ Creating a new authenticator
 ----------------------------
 ::
 
-	$ bna --new
+	$ bna new
 
 If you do not already have an authenticator, it will be set as default. You can pass --set-default otherwise.
 
@@ -39,16 +39,19 @@ Getting a serial's restore code
 -------------------------------
 ::
 
-	$ bna --restore-code
+	$ bna show-restore-code
 	Z45Q9CVXRR
-	$ bna --restore EU-1234-1234-1234 ABCDE98765
-	Restored serial EU-1234-1234-1234
+	$ bna restore EU-1234-1234-1234 ABCDE98765
+	Restored EU-1234-1234-1234
 
 OTP from Mobile
 ---------------
+
+To display the OTPAuth URL (used for setup QR Codes):
+
 ::
 
-	$ bna --otpauth-url
+	$ bna show-otpauth-url
 	otpauth://totp/Blizzard:EU123412341234:?secret=ASFAS75ASDF75889G9AD7S69AS7697AS&issuer=Blizzard&digits=8
 
 
