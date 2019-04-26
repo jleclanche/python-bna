@@ -20,7 +20,7 @@ def get_default_config_path() -> str:
 	Returns the default configuration file path
 	"""
 	configdir = "bna"
-	home = os.environ.get("HOME")
+	home = os.environ.get("HOME", "")
 	if os.name == "posix":
 		base = os.environ.get("XDG_CONFIG_HOME", os.path.join(home, ".config"))
 		path = os.path.join(base, configdir)
@@ -138,7 +138,7 @@ class App:
 
 
 class DefaultShowGroup(click.Group):
-	def parse_args(self, ctx: click.Context, args: list):
+	def parse_args(self, ctx: click.Context, args: List[str]):
 		if not args:
 			args.append("show")
 		return super().parse_args(ctx, args)
