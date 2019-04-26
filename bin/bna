@@ -80,7 +80,7 @@ class App:
 			self.config.read([self.config_file])
 		except Exception as e:
 			click.echo(f"Could not parse config file {self.config_file}: {e}", err=True)
-			click.exit(1)
+			exit(1)
 
 	def _serials(self) -> List[str]:
 		return [x for x in self.config.sections() if x != "bna"]
