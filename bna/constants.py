@@ -9,10 +9,3 @@ ENROLL_HOSTS = {
 	# "US": "us.mobile-service.blizzard.com",
 	"default": "mobile-service.blizzard.com",
 }
-
-PATHS = {
-	"init_restore": "/enrollment/initiatePaperRestore.htm",
-	"validate_restore": "/enrollment/validatePaperRestore.htm",
-	"enroll": "/enrollment/enroll.htm",
-	"time": "/enrollment/time.htm",
-}
