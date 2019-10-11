@@ -2,12 +2,12 @@ RSA_MOD = 1048900188079865568740077109142054431570301596680341971861256789602874
 RSA_KEY = 257
 
 ENROLL_HOSTS = {
-	# "CN": "mobile-service.battlenet.com.cn",
+	"CN": "mobile-service.battlenet.com.cn",
 	# "EU": "m.eu.mobileservice.blizzard.com",
 	# "US": "m.us.mobileservice.blizzard.com",
 	# "EU": "eu.mobile-service.blizzard.com",
 	# "US": "us.mobile-service.blizzard.com",
-	"default": "mobile-service.blizzard.com"
+	"default": "mobile-service.blizzard.com",
 }
 
 PATHS = {
