@@ -119,7 +119,9 @@ def restore(serial: str, restore_code: str) -> str:
 	if len(restore_code) != 10:
 		raise ValueError(f"invalid restore code (should be 10 characters): {restore_code}")
 
-	client = APIClient()
+	# Region is always the first two chars of a restore code
+	region = serial[:2]
+	client = APIClient(region=region)
 	challenge = client.initiate_paper_restore(serial)
 
 	code = restore_code_to_bytes(restore_code)
