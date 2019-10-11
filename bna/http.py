@@ -18,7 +18,7 @@ class HTTPError(Exception):
 		super().__init__(msg)
 
 
-def get_server_response(data: Optional[str], host: str, path: str) -> bytes:
+def _post(host: str, path: str, *, data: Optional[str] = None) -> bytes:
 	"""
 	Send computed data to Blizzard servers
 	Return the answer from the server
@@ -38,7 +38,7 @@ def get_server_response(data: Optional[str], host: str, path: str) -> bytes:
 def enroll(
 	data: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["enroll"]
 ) -> bytes:
-	return get_server_response(data, host, path)
+	return _post(host, path, data=data)
 
 
 def request_new_serial(
@@ -83,7 +83,7 @@ def get_time_offset(region: str = "US", path: str = PATHS["time"]) -> int:
 	server clock.
 	"""
 	host = ENROLL_HOSTS.get(region, ENROLL_HOSTS["default"])
-	response = get_server_response(None, host, path)
+	response = _post(host, path)
 	t = time()
 
 	# NOTE: The server returns time in milliseconds as an int whereas
@@ -117,14 +117,14 @@ def restore(serial: str, restore_code: str) -> str:
 def initiate_paper_restore(
 	serial: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["init_restore"]
 ) -> bytes:
-	return get_server_response(serial, host, path)
+	return _post(host, path, data=serial)
 
 
 def validate_paper_restore(
 	data: str, host: str = ENROLL_HOSTS["default"], path: str = PATHS["validate_restore"]
 ) -> bytes:
 	try:
-		response = get_server_response(data, host, path)
+		response = _post(host, path, data=data)
 	except HTTPError as e:
 		if e.response.status == 600:
 			raise HTTPError("Invalid serial or restore key", e.response)
