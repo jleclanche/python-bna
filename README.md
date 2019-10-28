@@ -47,7 +47,7 @@ You can pass `--set-default` otherwise.
 
 To display the OTPAuth URL (used for setup QR Codes):
 
-    $ bna show-otpauth-url
+    $ bna show-url
     otpauth://totp/Blizzard:EU123412341234:?secret=ASFAS75ASDF75889G9AD7S69AS7697AS&issuer=Blizzard&digits=8
 
 Now paste this to your OTP app, or convert to QRCode and scan, or
