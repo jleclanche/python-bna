@@ -65,7 +65,7 @@ To encode to a QRCode on your local system install \'qrencode\'
 
 For a PNG file saved to disk :
 
-    $ bna --otpauth-url | qrencode -o ~/BNA-qrcode.png
+    $ bna show-url | qrencode -o ~/BNA-qrcode.png
     # Scan QRCode
     $ rm ~/BNA-qrcode.png
 
