@@ -266,7 +266,10 @@ def show_restore_code(ctx: click.Context, serial: str) -> None:
 @click.pass_context
 def show_url(ctx: click.Context, serial: str) -> None:
 	secret = ctx.obj.get_secret(serial)
-	click.echo(bna.get_otpauth_url(serial, secret))
+
+	# Only add a newline if stdout is a tty
+	newline = sys.stdout.isatty()
+	click.echo(bna.get_otpauth_url(serial, secret), nl=newline)
 
 
 @main.command("show-secret", help="Display an authenticator's secret")
