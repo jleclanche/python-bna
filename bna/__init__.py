@@ -13,7 +13,6 @@ from .crypto import get_restore_code
 from .http import HTTPError, get_time_offset, request_new_serial, restore
 from .utils import get_otpauth_url, normalize_serial, prettify_serial
 
-
 __all__ = [
 	"get_restore_code",
 	"get_time_offset",
