@@ -1,5 +1,4 @@
 # python-bna
-[![Build Status](https://api.travis-ci.org/jleclanche/python-bna.svg?branch=master)](https://travis-ci.org/jleclanche/python-bna)
 
 ## Requirements
 
