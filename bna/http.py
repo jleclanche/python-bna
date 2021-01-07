@@ -89,7 +89,7 @@ def request_new_serial(
 	serial = decrypted_response[20:].decode()
 
 	region = serial[:2]
-	if region not in ("CN", "EU", "US"):
+	if region not in ("CN", "EU", "KR", "US"):
 		raise ValueError("Unexpected region: %r" % (region))
 
 	return serial, secret
