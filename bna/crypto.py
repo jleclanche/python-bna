@@ -25,7 +25,7 @@ def decrypt(response: bytes, otp: bytes) -> bytearray:
 def bytes_to_restore_code(digest: Union[bytes, bytearray]) -> str:
 	ret = []
 	for i in digest:
-		c = i & 0x1F
+		c = i & 0x1f
 		if c < 10:
 			c += 48
 		else:
