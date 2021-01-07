@@ -13,13 +13,15 @@ classifiers = [
 	"Intended Audience :: End Users/Desktop",
 	"Topic :: Security",
 	"Topic :: Security :: Cryptography",
-
 ]
 
 [tool.poetry.dependencies]
 python = "^3.6"
 click = "^7.1.2"
 pyotp = "^2.4.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.1"
 
 [build-system]
 requires = ["poetry>=0.12"]
