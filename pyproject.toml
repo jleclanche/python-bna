@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bna"
-version = "5.0.1"
+version = "5.0.2"
 description = "Blizzard Authenticator and OTP library in Python"
 authors = ["Jerome Leclanche <jerome@leclan.ch>"]
 license = "MIT"
