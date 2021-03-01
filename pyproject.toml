@@ -23,6 +23,9 @@ pyotp = "^2.4.0"
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.1"
 
+[tool.poetry.scripts]
+bna = "bna.cli:main"
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
