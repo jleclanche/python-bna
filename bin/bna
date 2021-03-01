@@ -166,7 +166,7 @@ def show(ctx: click.Context, serial: str, interactive: bool) -> None:
 		click.echo("Ctrl-C to exit")
 		while True:
 			token = totp.now()
-			sys.stdout.write("\r" + totp.now())
+			sys.stdout.write("\r" + token)
 			sys.stdout.flush()
 			sleep(1)
 	else:
