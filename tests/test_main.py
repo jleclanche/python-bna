@@ -22,8 +22,8 @@ def test_restore_code():
 
 
 def test_serial():
-	pretty_serial = bna.prettify_serial(SERIAL)
-	assert pretty_serial == "US-1209-1071-1868"
+	pretty_serial = bna.prettify_serial(SERIAL.lower())
+	assert pretty_serial == "US120910711868"
 	assert bna.normalize_serial(pretty_serial) == SERIAL
 
 
