@@ -27,7 +27,7 @@ def prettify_serial(serial: str) -> str:
 			raise ValueError("bad serial %r" % (serial))
 		return "%04i" % int((chars))
 
-	return "%s-%s-%s-%s" % (
+	return "%s%s%s%s" % (
 		serial[0:2].upper(),
 		digits(serial[2:6]),
 		digits(serial[6:10]),
