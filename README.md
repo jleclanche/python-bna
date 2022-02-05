@@ -17,6 +17,29 @@ is less secure than keeping the devices separate. Use this at your own risk.
 Configuration is stored in `~/.config/bna/bna.conf`. You can pass a
 different config path with `bna --config=~/.bna.conf` for example.
 
+## Installation
+
+Make sure you have Python 3 installed. Here Python 3 is on the path as
+`python3`.
+
+Set up python virtual environment and activate it inside a directory of your
+choice:
+
+    $ python3 -m venv .env && source ./.env/bin/activate
+
+Install the package
+
+    $ pip install bna
+
+In the activated virtual environment directory, `bna` will be available for
+running commands.
+
+    $ bna --version 
+
+When finished, you can deactivate the virtual environment.
+
+    $ deactivate
+
 
 ### Creating a new authenticator
 
