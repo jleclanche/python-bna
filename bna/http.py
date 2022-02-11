@@ -29,7 +29,9 @@ class APIClient:
 		response = conn.getresponse()
 
 		if response.status != 200:
-			raise HTTPError("%s returned status %i" % (self.host, response.status), response)
+			raise HTTPError(
+				"%s returned status %i" % (self.host, response.status), response
+			)
 
 		ret = response.read()
 		conn.close()
@@ -117,7 +119,9 @@ def restore(serial: str, restore_code: str) -> str:
 	serial = normalize_serial(serial)
 	restore_code = restore_code.upper()
 	if len(restore_code) != 10:
-		raise ValueError(f"invalid restore code (should be 10 characters): {restore_code}")
+		raise ValueError(
+			f"invalid restore code (should be 10 characters): {restore_code}"
+		)
 
 	# Region is always the first two chars of a restore code
 	region = serial[:2]
