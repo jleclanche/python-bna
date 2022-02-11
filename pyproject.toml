@@ -17,11 +17,11 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.6"
-click = "^7.1.2"
-pyotp = "^2.4.0"
+click = "^8.0.3"
+pyotp = "^2.6.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.1"
+pytest = "^7.0.0"
 
 [tool.poetry.scripts]
 bna = "bna.cli:main"
