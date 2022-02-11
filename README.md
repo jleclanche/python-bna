@@ -25,6 +25,11 @@ different config path with `bna --config=~/.bna.conf` for example.
 If you do not already have an authenticator, it will be set as default.
 You can pass `--set-default` otherwise.
 
+---
+
+**When adding the authenticator to your Battle.net account you must enter the serial number without dashes**
+
+---
 
 ### Getting an authentication token
 
