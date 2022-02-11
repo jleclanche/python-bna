@@ -21,7 +21,12 @@ click = "^8.0.3"
 pyotp = "^2.6.0"
 
 [tool.poetry.dev-dependencies]
+flake8 = "^4.0.1"
+isort = "^5.10.1"
+mypy = "^0.931"
 pytest = "^7.0.0"
+types-setuptools = "^57.4.9"
+tan = "^21.14"
 
 [tool.poetry.scripts]
 bna = "bna.cli:main"
